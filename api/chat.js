@@ -4,10 +4,7 @@ export default async function handler(req, res) {
 
   const { system, messages } = req.body;
 
-  // Combine system prompt + messages into Gemini format
   const contents = [];
-
-  // Add conversation history
   for (const msg of messages) {
     contents.push({
       role: msg.role === "assistant" ? "model" : "user",
@@ -15,28 +12,37 @@ export default async function handler(req, res) {
     });
   }
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: system }] },
-        contents,
-        generationConfig: {
-          maxOutputTokens: 1000,
-          temperature: 0.7,
-        },
-      }),
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: system }] },
+          contents,
+          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 },
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log("Gemini status:", response.status);
+    console.log("Gemini response:", JSON.stringify(data).slice(0, 500));
+
+    if (!response.ok) {
+      return res.status(500).json({ error: data?.error?.message || "Gemini API error" });
     }
-  );
 
-  const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      console.log("No text in response:", JSON.stringify(data));
+      return res.status(500).json({ error: "No text returned from Gemini" });
+    }
 
-  if (!response.ok) {
-    return res.status(500).json({ error: data });
+    res.status(200).json({ text });
+  } catch (err) {
+    console.error("Handler error:", err);
+    res.status(500).json({ error: err.message });
   }
-
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't get a response.";
-  res.status(200).json({ text });
 }
