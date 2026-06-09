@@ -3,7 +3,8 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
   const { system, messages } = req.body;
-
+console.log("Key present:", !!process.env.GEMINI_API_KEY);
+console.log("Key starts with:", process.env.GEMINI_API_KEY?.slice(0, 6));
   const contents = [];
   for (const msg of messages) {
     contents.push({
