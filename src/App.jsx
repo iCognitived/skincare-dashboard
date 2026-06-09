@@ -426,18 +426,13 @@ Your role:
     setLoading(true);
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: systemPrompt,
-          messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content })),
-        }),
-      });
-      const data = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || "Sorry, I couldn't get a response.";
+const res = await fetch("/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ system: systemPrompt, messages: [...messages, userMsg] }),
+});
+const data = await res.json();
+const reply = data.text || "Sorry, couldn't get a response.";
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch (e) {
       setMessages(prev => [...prev, { role: "assistant", content: "Connection error — please try again." }]);
