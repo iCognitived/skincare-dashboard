@@ -1,0 +1,31 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
+}
+
+body {
+  background: #fafaf9;
+  /* Prevent overscroll bounce on iOS from looking bad */
+  overscroll-behavior: none;
+}
+
+/* Safe area padding for iPhone notch / Dynamic Island */
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: #e7e5e4; border-radius: 99px; }
+
+/* Smooth scrolling */
+* { -webkit-overflow-scrolling: touch; }
+
+/* Remove blue tap flash on iOS */
+button, a { -webkit-tap-highlight-color: rgba(0,0,0,0); }
