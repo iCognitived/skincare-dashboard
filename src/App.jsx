@@ -92,8 +92,8 @@ const SKIN_TEMPLATES = {
     emoji: "🤍", label: "Sensitive / Redness-prone",
     desc: "Minimal routine, fragrance-free, barrier-first approach",
     am: [
-      { id: "am1", step: "Cleanse",  product: "Avène Extremely Gentle Cleanser Lotion", no-rinse — ultra gentle" },
-      { id: "am2", step: "Calm",     product: "Avène Thermal Spring Water Spray",       note: "Soothe before moisturizer" },
+      { id: "am1", step: "Cleanse", product: "Avène Extremely Gentle Cleanser Lotion", note: "no-rinse — ultra gentle" },
+        { id: "am2", step: "Calm",     product: "Avène Thermal Spring Water Spray",       note: "Soothe before moisturizer" },
       { id: "am3", step: "Protect",  product: "Avène Mineral SPF50 Tinted",             note: "FINAL step — mineral, fragrance-free" },
     ],
     daily: buildDailyForSkinType("sensitive"),
