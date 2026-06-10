@@ -2,7 +2,6 @@
 // Design language: Apothecary minimal · light + dark mode · terracotta accent · Cormorant serif
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import React from "react";
 import {
   auth, db,
   signInWithGoogle, signOutUser, onAuthStateChanged,
@@ -14,7 +13,7 @@ if (!document.getElementById("sc-fonts")) {
   const l = document.createElement("link");
   l.id   = "sc-fonts";
   l.rel  = "stylesheet";
-  l.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght=0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;600&display=swap";
+  l.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;600&display=swap";
   document.head.appendChild(l);
 }
 
@@ -62,7 +61,7 @@ const SKIN_TEMPLATES = {
     emoji: "💧", label: "Oily / Acne-prone",
     desc: "Focus on sebum control, pore care, lightweight hydration",
     am: [
-      { id: "am1", step: "Cleanse",  product: "CeraVe Foaming Facial Cleanser",        note: "Gel cleanser — removes excess oil" },
+      { id: "am1", step: "Cleanse",  product: "CeraVe Foaming Facial Cleanser",         note: "Gel cleanser — removes excess oil" },
       { id: "am2", step: "Tone",     product: "Klairs Supple Preparation Toner",        note: "Lightweight — no alcohol" },
       { id: "am3", step: "Protect",  product: "Skin Aqua UV Super Moisture Gel SPF50+", note: "FINAL step — gel formula, non-greasy" },
     ],
@@ -92,8 +91,8 @@ const SKIN_TEMPLATES = {
     emoji: "🤍", label: "Sensitive / Redness-prone",
     desc: "Minimal routine, fragrance-free, barrier-first approach",
     am: [
-      { id: "am1", step: "Cleanse", product: "Avène Extremely Gentle Cleanser Lotion", note: "no-rinse — ultra gentle" },
-        { id: "am2", step: "Calm",     product: "Avène Thermal Spring Water Spray",       note: "Soothe before moisturizer" },
+      { id: "am1", step: "Cleanse",  product: "Avène Extremely Gentle Cleanser Lotion", note: "No-rinse — ultra gentle" },
+      { id: "am2", step: "Calm",     product: "Avène Thermal Spring Water Spray",       note: "Soothe before moisturizer" },
       { id: "am3", step: "Protect",  product: "Avène Mineral SPF50 Tinted",             note: "FINAL step — mineral, fragrance-free" },
     ],
     daily: buildDailyForSkinType("sensitive"),
@@ -135,17 +134,17 @@ const MY_DAILY_DEFAULT = {
   Sun: { label: "Pigment Night", color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading", active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum", note: "PIH fading — full face" }, footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."], weeklyAddon: null },
 };
 const MY_INVENTORY_DEFAULT = [
-  { id: 1,  name: "Neutrogena Hydro Boost Cleanser",             category: "Cleanser",    status: "In Use",    level: 90,  notes: "Brand new", expiry: "" },
+  { id: 1,  name: "Neutrogena Hydro Boost Cleanser",               category: "Cleanser",    status: "In Use",    level: 90,  notes: "Brand new", expiry: "" },
   { id: 2,  name: "Rose Water Mist",                               category: "Prep",        status: "In Use",    level: 60,  notes: "", expiry: "" },
   { id: 3,  name: "Hyphen Rice Water Brightening Pads",            category: "Prep",        status: "In Use",    level: 70,  notes: "1 almost full + 2 unopened packs", expiry: "" },
-  { id: 6,  name: "Hyphen Double Shot Radiance Lift Serum",        category: "Serum",        status: "In Use",    level: 55,  notes: "1 almost full + 1 unopened backup", expiry: "" },
-  { id: 7,  name: "The Ordinary Niacinamide 10% + Zinc 1%",        category: "Serum",        status: "In Use",    level: 45,  notes: "", expiry: "" },
-  { id: 9,  name: "Elizabeth Arden Ceramide Capsules (Gold)",      category: "Serum",        status: "In Use",    level: 55,  notes: "More than half left", expiry: "" },
+  { id: 6,  name: "Hyphen Double Shot Radiance Lift Serum",        category: "Serum",       status: "In Use",    level: 55,  notes: "1 almost full + 1 unopened backup", expiry: "" },
+  { id: 7,  name: "The Ordinary Niacinamide 10% + Zinc 1%",        category: "Serum",       status: "In Use",    level: 45,  notes: "", expiry: "" },
+  { id: 9,  name: "Elizabeth Arden Ceramide Capsules (Gold)",      category: "Serum",       status: "In Use",    level: 55,  notes: "More than half left", expiry: "" },
   { id: 13, name: "TO Natural Moisturizing Factors + Rice Lipids", category: "Moisturizer", status: "In Use",    level: 65,  notes: "Rich texture", expiry: "" },
   { id: 17, name: "Innisfree Volcanic Clay Mask",                  category: "Mask",        status: "In Use",    level: 30,  notes: "Almost full", expiry: "" },
-  { id: 18, name: "Suroskie Rose Collagen Sheet Mask",              category: "Mask",        status: "Low Stock", level: 5,   notes: "Only 1 sheet left!", expiry: "" },
+  { id: 18, name: "Suroskie Rose Collagen Sheet Mask",             category: "Mask",        status: "Low Stock", level: 5,   notes: "Only 1 sheet left!", expiry: "" },
   { id: 19, name: "Hyphen All I Need SPF 50 PA++++",               category: "Sunscreen",   status: "In Use",    level: 50,  notes: "1 almost full + 1 unopened", expiry: "" },
-  { id: 20, name: "Hyphen Advanced De-Pigmentation Serum",          category: "To Buy",      status: "Wishlist",  level: 0,   notes: "India window — fills Alpha Arbutin gap", expiry: "" },
+  { id: 20, name: "Hyphen Advanced De-Pigmentation Serum",         category: "To Buy",      status: "Wishlist",  level: 0,   notes: "India window — fills Alpha Arbutin gap", expiry: "" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -386,18 +385,25 @@ function StreakBadge({ streak, T }) {
   );
 }
 
-// ── AI Advisor (Named Export) ─────────────────────────────────────────────
-export function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
+// ── AI Advisor ────────────────────────────────────────────────────────────
+function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
 
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, loading]);
+  useEffect(() => { if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  const systemPrompt = `You are a knowledgeable, friendly skincare advisor. You have full context about this user's routine, inventory, and skin log.
+
+USER PROFILE: Skin type: ${profile?.skinType || "Not specified"}, Name: ${profile?.displayName || "User"}, Streak: ${profile?.streakCount || 0} days
+
+AM ROUTINE: ${JSON.stringify(amSteps?.map(s => s.product))}
+PM SCHEDULE: ${JSON.stringify(Object.entries(daily || {}).map(([day, d]) => ({ day, active: d.active?.product })))}
+INVENTORY: ${JSON.stringify(inventory?.map(i => ({ name: i.name, status: i.status, level: i.level + "%" })))}
+RECENT LOG: ${JSON.stringify(skinLog?.slice(0, 5).map(e => ({ date: e.date, mood: e.mood, oiliness: e.oiliness })))}
+
+Give concise, personalised advice. Keep responses short and mobile-friendly. Be warm, not clinical.`;
 
   const send = async () => {
     const text = input.trim();
@@ -412,68 +418,30 @@ export function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
     try {
       const historyPayload = updatedMessages.slice(-12);
 
-      const safeAm = Array.isArray(amSteps) ? amSteps.map(s => s?.product || "") : [];
-      const safeDaily = daily ? Object.entries(daily).map(([day, d]) => ({ day, active: d?.active?.product || "" })) : [];
-      const safeInventory = Array.isArray(inventory) ? inventory.map(i => ({ name: i?.name || "", status: i?.status || "", level: (i?.level || 0) + "%" })) : [];
-      const safeLog = Array.isArray(skinLog) ? skinLog.slice(0, 5).map(e => ({ date: e?.date || "", mood: e?.mood || "", oiliness: e?.oiliness || "" })) : [];
-
-      const systemPrompt = [
-        "You are a knowledgeable, friendly skincare advisor. You have full context about this user's routine, inventory, and skin log.",
-        `USER PROFILE: Skin type: ${profile?.skinType || "Not specified"}, Name: ${profile?.displayName || "User"}, Streak: ${profile?.streakCount || 0} days`,
-        `AM ROUTINE: ${JSON.stringify(safeAm)}`,
-        `PM SCHEDULE: ${JSON.stringify(safeDaily)}`,
-        `INVENTORY: ${JSON.stringify(safeInventory)}`,
-        `RECENT LOG: ${JSON.stringify(safeLog)}`,
-        "Give concise, personalised advice. Keep responses short and mobile-friendly. Be warm, not clinical."
-      ].join("\n");
-
-      const targetUrl = window.location.origin + "/api/chat";
-
-      const res = await fetch(targetUrl, {
+      const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           system: systemPrompt,
           messages: historyPayload,
         }),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        let errorMsg = "Unknown API Error";
-        try {
-          const errJson = JSON.parse(errorText);
-          errorMsg = errJson.error || errorMsg;
-        } catch {
-          errorMsg = errorText || errorMsg;
-        }
-        throw new Error(errorMsg);
-      }
-
       const data = await res.json();
 
-      if (data.error) {
-        setMessages(prev => [...prev, { role: "assistant", content: "Error: " + data.error }]);
+      if (!res.ok || data.error) {
+        setMessages(prev => [...prev, { role: "assistant", content: "Error: " + (data.error || "Unknown error") }]);
       } else {
         setMessages(prev => [...prev, { role: "assistant", content: data.text }]);
       }
     } catch (err) {
-      console.error("Fetch Exception Captured:", err);
-      setMessages(prev => [...prev, { role: "assistant", content: "Connection issue: " + err.message }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "Network error: " + err.message }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const suggestions = [
-    "What's causing my oily T-zone?", 
-    "Can I add Vitamin C to my routine?", 
-    "Is my routine good for PIH?", 
-    "What should I restock first?"
-  ];
+  const suggestions = ["What's causing my oily T-zone?", "Can I add Vitamin C to my routine?", "Is my routine good for PIH?", "What should I restock first?"];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100svh - 180px)" }}>
@@ -514,163 +482,556 @@ export function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
   );
 }
 
-// ── Main App (Default Export) ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// ── Main App ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
 export default function App() {
-  const [dark, setDark] = useState(() => localStorage.getItem("sc-theme") === "dark");
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
-  const [activeTab, setActiveTab] = useState("routine");
-
-  // Local state contexts for standard tracking loops
-  const [amSteps, setAmSteps] = useState(MY_AM_DEFAULT);
-  const [daily, setDaily] = useState(MY_DAILY_DEFAULT);
-  const [inventory, setInventory] = useState(MY_INVENTORY_DEFAULT);
-  const [skinLog, setSkinLog] = useState([]);
-
-  const T = useMemo(() => makeTokens(dark), [dark]);
-
+  // ── Dark mode (exact pattern from Fragrance Vault) ──
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem("sc_dark") === "1"; }
+    catch { return false; }
+  });
   const toggleDark = () => {
-    setDark(prev => {
-      const next = !prev;
-      localStorage.setItem("sc-theme", next ? "dark" : "light");
+    setDark(d => {
+      const next = !d;
+      try { localStorage.setItem("sc_dark", next ? "1" : "0"); } catch {}
       return next;
     });
   };
+  const T = makeTokens(dark);
 
+  // ── Auth state ──
+  const [authUser,     setAuthUser]     = useState(undefined);
+  const [profile,      setProfile]      = useState(null);
+  const [needsOnboard, setNeedsOnboard] = useState(false);
+
+  // ── App data ──
+  const [amSteps,   setAmSteps]   = useState(MY_AM_DEFAULT);
+  const [daily,     setDaily]     = useState(MY_DAILY_DEFAULT);
+  const [inventory, setInventory] = useState([]);
+  const [skinLog,   setSkinLog]   = useState([]);
+  const [checked,   setChecked]   = useState({ date: TODAY_DATE, steps: {} });
+
+  // ── UI state ──
+  const [tab,           setTab]           = useState("today");
+  const [filterCat,     setFilterCat]     = useState("All");
+  const [toast,         setToast]         = useState(null);
+  const [editAmStep,    setEditAmStep]    = useState(null);
+  const [editDay,       setEditDay]       = useState(null);
+  const [editItem,      setEditItem]      = useState(null);
+  const [addingItem,    setAddingItem]    = useState(false);
+  const [newItem,       setNewItem]       = useState({ name: "", category: "Serum", status: "In Use", level: 100, notes: "", expiry: "" });
+  const [logForm,       setLogForm]       = useState({ mood: "😊", oiliness: "Normal", notes: "" });
+  const [showLog,       setShowLog]       = useState(false);
+  const [addingAmStep,  setAddingAmStep]  = useState(false);
+  const [newAmStep,     setNewAmStep]     = useState({ step: "", product: "", note: "" });
+  const [addingPmStep,  setAddingPmStep]  = useState(null);
+  const [newPmStep,     setNewPmStep]     = useState({ type: "prefix", step: "", product: "", note: "" });
+
+  const showToast = useCallback((msg) => setToast(msg), []);
+
+  // ── Auth listener ──
   useEffect(() => {
-    return onAuthStateChanged(auth, async (u) => {
-      setUser(u);
-      if (u) {
-        const p = await loadProfile(u.uid);
-        if (p) {
-          setProfile(p);
-          const am = await loadUserData(u.uid, "amSteps"); if (am) setAmSteps(am);
-          const dy = await loadUserData(u.uid, "daily");   if (dy) setDaily(dy);
-          const iv = await loadUserData(u.uid, "inventory"); if (iv) setInventory(iv);
-          const sl = await loadUserData(u.uid, "skinLog");   if (sl) setSkinLog(sl);
-        }
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      setAuthUser(user || null);
+      if (!user) { setNeedsOnboard(false); return; }
+      const prof = await loadProfile(user.uid);
+      if (!prof) { setNeedsOnboard(true); }
+      else { setProfile(prof); setNeedsOnboard(false); await loadAllData(user.uid); }
     });
+    return unsub;
   }, []);
 
-  const handleOnboardingComplete = (p, am, dy) => {
-    setProfile(p);
-    setAmSteps(am);
-    setDaily(dy);
-    setInventory([]);
-    setSkinLog([]);
+  const loadAllData = async (uid) => {
+    const [am, dy, inv, log, chk] = await Promise.all([
+      loadUserData(uid, "amSteps"), loadUserData(uid, "daily"),
+      loadUserData(uid, "inventory"), loadUserData(uid, "skinLog"), loadUserData(uid, "checked"),
+    ]);
+    if (am)  setAmSteps(am);
+    if (dy)  setDaily(dy);
+    if (inv) setInventory(inv);
+    if (log) setSkinLog(log);
+    if (chk) setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
   };
 
-  if (loading) {
+  const saveDebounced = useCallback((field, value) => {
+    if (!authUser) return;
+    saveUserData(authUser.uid, field, value).catch(console.error);
+  }, [authUser]);
+
+  useEffect(() => { if (authUser) saveDebounced("amSteps",   amSteps);   }, [amSteps]);
+  useEffect(() => { if (authUser) saveDebounced("daily",     daily);     }, [daily]);
+  useEffect(() => { if (authUser) saveDebounced("inventory", inventory); }, [inventory]);
+  useEffect(() => { if (authUser) saveDebounced("skinLog",   skinLog);   }, [skinLog]);
+  useEffect(() => { if (authUser) saveDebounced("checked",   checked);   }, [checked]);
+
+  // ── Streak ──
+  const updateStreak = useCallback(async () => {
+    if (!authUser || !profile) return;
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const ys = yesterday.toLocaleDateString("en-CA");
+    let n = profile.streakCount || 0;
+    if (profile.lastCompletedDate === ys) n += 1;
+    else if (profile.lastCompletedDate !== TODAY_DATE) n = 1;
+    const updated = { ...profile, streakCount: n, lastCompletedDate: TODAY_DATE };
+    setProfile(updated);
+    await saveProfile(authUser.uid, updated);
+  }, [authUser, profile]);
+
+  // ── Today schedule ──
+  const todaySched = daily[TODAY] || MY_DAILY_DEFAULT[TODAY];
+  const todayPMSteps = useMemo(() => {
+    const steps = [...PM_BASE_PREFIX];
+    if (todaySched.weeklyAddon) steps.push({ id: "addon", step: "Weekly Add-on 🗓", product: todaySched.weeklyAddon.product, note: todaySched.weeklyAddon.note, isAddon: true });
+    steps.push({ id: "target", step: todaySched.active.step, product: todaySched.active.product, note: todaySched.active.note });
+    steps.push(...PM_BASE_SUFFIX);
+    if (todaySched.extraSuffix) steps.push(...todaySched.extraSuffix);
+    return steps;
+  }, [todaySched]);
+
+  const allTodayStepIds = [...amSteps.map(s => s.id), ...todayPMSteps.map(s => s.id)];
+  const checkedSteps    = checked.steps || {};
+  const completedCount  = allTodayStepIds.filter(id => checkedSteps[id]).length;
+  const allDone         = completedCount === allTodayStepIds.length && allTodayStepIds.length > 0;
+
+  useEffect(() => {
+    if (allDone && profile && profile.lastCompletedDate !== TODAY_DATE) {
+      updateStreak();
+      showToast("🔥 Routine complete! Streak updated.");
+    }
+  }, [allDone]);
+
+  const toggleCheck = (id) => setChecked(prev => ({ ...prev, steps: { ...prev.steps, [id]: !prev.steps?.[id] } }));
+
+  const todayProducts = useMemo(() =>
+    [...amSteps.map(s => s.product), ...todayPMSteps.map(s => s.product)].map(p => p.toLowerCase()),
+  [amSteps, todayPMSteps]);
+
+  // Alerts
+  const lowStockAlerts = inventory.filter(i => i.status === "Low Stock" || (i.level > 0 && i.level <= 20 && i.status !== "Wishlist"));
+  const wishlistAlerts = inventory.filter(i => i.status === "Wishlist");
+  const expiryAlerts   = inventory.filter(i => { const es = expiryStatus(i.expiry); return es && es !== "ok"; });
+
+  // ── Reusable card style ──
+  const card = {
+    background: T.bgCard,
+    borderRadius: T.radiusLg,
+    border: `1px solid ${T.border}`,
+    padding: "15px 17px",
+    marginBottom: 10,
+    boxShadow: dark ? "none" : "0 1px 4px rgba(28,25,23,0.05)",
+    transition: "background 0.3s, border-color 0.3s",
+  };
+
+  const btnBase = {
+    fontFamily: T.fontBody, fontWeight: 600, cursor: "pointer",
+    border: "none", borderRadius: T.radiusSm, padding: "12px 16px", fontSize: 14,
+    transition: "all 0.15s",
+  };
+
+  // ── Step card ──
+  function StepCard({ s, isAm }) {
+    const isChecked = checkedSteps[s.id];
     return (
-      <div style={{ minHeight: "100svh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", color: T.inkLight, fontFamily: T.fontMono, fontSize: 11 }}>
-        LOADING APOTHECARY CONTEXT...
+      <div style={{ ...card, display: "flex", gap: 12, alignItems: "flex-start", opacity: isChecked ? 0.4 : 1, background: s.isAddon ? T.greenLight : T.bgCard, border: s.isAddon ? `1.5px solid ${T.green}44` : `1px solid ${T.border}` }}>
+        <button onClick={() => toggleCheck(s.id)} style={{ width: 24, height: 24, borderRadius: 7, flexShrink: 0, marginTop: 1, cursor: "pointer", border: `2px solid ${isChecked ? T.green : T.border}`, background: isChecked ? T.green : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+          {isChecked && <span style={{ color: "#fff", fontSize: 12, lineHeight: 1 }}>✓</span>}
+        </button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 3, color: isAm ? T.gold : (s.isAddon ? T.green : T.accent) }}>{s.step}</div>
+          <div style={{ fontFamily: T.fontDisplay, fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: s.note ? 3 : 0 }}>{s.product}</div>
+          {s.note && <div style={{ fontFamily: T.fontBody, fontSize: 12, color: s.isAddon ? T.green : T.inkMid, lineHeight: 1.5 }}>{s.note}</div>}
+        </div>
       </div>
     );
   }
 
-  if (!user) return <SignIn dark={dark} toggleDark={toggleDark} />;
-  if (!profile) return <Onboarding user={user} onComplete={handleOnboardingComplete} dark={dark} toggleDark={toggleDark} />;
-
-  return (
-    <div style={{ minHeight: "100svh", background: T.bg, color: T.ink, fontFamily: T.fontBody, transition: "background 0.3s", paddingBottom: 60 }}>
-      <header style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${T.border}`, background: T.bgCard }}>
-        <div>
-          <h1 style={{ fontFamily: T.fontDisplay, fontSize: 24, fontWeight: 600, color: T.ink, margin: 0, fontStyle: "italic" }}>Apothecary Skin</h1>
-          <p style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, margin: "2px 0 0", letterSpacing: "0.05em" }}>V3.0 // {TODAY.toUpperCase()}</p>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <DarkToggle dark={dark} toggle={toggleDark} />
-          <button onClick={signOutUser} style={{ background: "none", border: `1px solid ${T.border}`, padding: "6px 12px", borderRadius: T.radiusSm, color: T.inkMid, fontFamily: T.fontBody, fontSize: 12, cursor: "pointer" }}>Sign Out</button>
-        </div>
-      </header>
-
-      <main style={{ maxWidth: 540, margin: "0 auto", padding: "20px 16px" }}>
-        <StreakBadge streak={profile?.streakCount} T={T} />
-        <WeeklyReport skinLog={skinLog} inventory={inventory} T={T} />
-
-        {/* Tab Switcher Layout */}
-        <div style={{ display: "flex", background: T.bgSubtle, borderRadius: T.radius, padding: 4, marginBottom: 20 }}>
-          {["routine", "inventory", "advisor"].map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={{ flex: 1, padding: "8px 0", border: "none", borderRadius: T.radiusSm, background: activeTab === tab ? T.bgCard : "none", color: activeTab === tab ? T.accent : T.inkMid, fontFamily: T.fontBody, fontSize: 13, fontWeight: 600, cursor: "pointer", textTransform: "capitalize", transition: "all 0.15s" }}>
-              {tab === "advisor" ? "AI Advisor" : tab}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Views Render Blocks */}
-        {activeTab === "routine" && (
-          <div style={{ background: T.bgCard, padding: 16, borderRadius: T.radiusLg, border: `1px solid ${T.border}` }}>
-            <h2 style={{ fontFamily: T.fontDisplay, fontSize: 20, margin: "0 0 12px", fontStyle: "italic" }}>Today's Skincare Sequence</h2>
-            <Divider label="AM ROUTINE" color={T.accent} T={T} />
-            {amSteps.map((s, idx) => (
-              <div key={s.id || idx} style={{ display: "flex", gap: 12, marginBottom: 10, paddingBottom: 10, borderBottom: idx !== amSteps.length - 1 ? `1px dashed ${T.border}` : "none" }}>
-                <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.inkLight }}>{idx + 1}</span>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{s.product}</div>
-                  <div style={{ fontSize: 12, color: T.inkLight }}>{s.step} {s.note && `· ${s.note}`}</div>
-                </div>
-              </div>
-            ))}
-            
-            <Divider label={`${TODAY.toUpperCase()} PM SCHEDULE`} color={T.purple} T={T} />
-            {PM_BASE_PREFIX.map((s, idx) => (
-              <div key={s.id || idx} style={{ display: "flex", gap: 12, marginBottom: 10 }}>
-                <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.inkLight }}>P-{idx + 1}</span>
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: 14, color: T.inkMid }}>{s.product}</div>
-                  <div style={{ fontSize: 11, color: T.inkLight }}>{s.step}</div>
-                </div>
-              </div>
-            ))}
-            <div style={{ background: T.bgSubtle, padding: 12, borderRadius: T.radius, margin: "10px 0", borderLeft: `4px solid ${daily[TODAY]?.color || T.accent}` }}>
-              <div style={{ fontSize: 11, fontFamily: T.fontMono, fontWeight: 700, color: daily[TODAY]?.color }}>{daily[TODAY]?.label.toUpperCase()}</div>
-              <div style={{ fontWeight: 600, fontSize: 15, marginTop: 2 }}>{daily[TODAY]?.active?.product}</div>
-              <div style={{ fontSize: 12, color: T.inkMid }}>{daily[TODAY]?.active?.step} · {daily[TODAY]?.active?.note}</div>
+  // ── Day routine card ──
+  function DayRoutineCard({ day }) {
+    const sc = daily[day] || MY_DAILY_DEFAULT[day];
+    const isToday = day === TODAY;
+    const [expanded, setExpanded] = useState(isToday);
+    const allPmSteps = [
+      ...PM_BASE_PREFIX,
+      ...(sc.extraPrefix || []),
+      ...(sc.weeklyAddon ? [{ id: "addon_" + day, step: "Weekly Add-on 🗓", product: sc.weeklyAddon.product, note: sc.weeklyAddon.note, isAddon: true }] : []),
+      { id: "target_" + day, step: sc.active.step, product: sc.active.product, note: sc.active.note },
+      ...PM_BASE_SUFFIX,
+      ...(sc.extraSuffix || []),
+    ];
+    const deletePmStep = (stepId, type) => {
+      setDaily(prev => { const d = prev[day]; const field = type === "prefix" ? "extraPrefix" : "extraSuffix"; return { ...prev, [day]: { ...d, [field]: (d[field] || []).filter(s => s.id !== stepId) } }; });
+      showToast("Step removed");
+    };
+    return (
+      <div style={{ ...card, padding: 0, overflow: "hidden", background: isToday ? T.bgCard : T.bgCard, border: isToday ? `1.5px solid ${T.accent}55` : `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "15px 17px", cursor: "pointer" }} onClick={() => setExpanded(e => !e)}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", gap: 7, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, color: isToday ? T.accent : T.inkMid, minWidth: 30 }}>{day}</span>
+              <span style={{ background: sc.color + "22", color: sc.color, fontFamily: T.fontBody, fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 99 }}>{sc.emoji} {sc.label}</span>
+              {isToday && <span style={{ background: T.accent, color: "#fff", fontFamily: T.fontMono, fontSize: 8, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.09em" }}>TODAY</span>}
             </div>
-            {PM_BASE_SUFFIX.map((s, idx) => (
-              <div key={s.id || idx} style={{ display: "flex", gap: 12, marginTop: 10 }}>
-                <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.inkLight }}>S-{idx + 1}</span>
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: 14, color: T.inkMid }}>{s.product}</div>
-                  <div style={{ fontSize: 11, color: T.inkLight }}>{s.step} · {s.note}</div>
-                </div>
-              </div>
-            ))}
+            <div style={{ fontFamily: T.fontDisplay, fontSize: 14, fontWeight: 600, color: T.ink, marginBottom: 2 }}>{sc.active.product}</div>
+            <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid }}>{sc.goal}</div>
+            {sc.weeklyAddon && <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.green, marginTop: 4 }}>＋ {sc.weeklyAddon.label || sc.weeklyAddon.product}</div>}
           </div>
-        )}
-
-        {activeTab === "inventory" && (
-          <div style={{ background: T.bgCard, padding: 16, borderRadius: T.radiusLg, border: `1px solid ${T.border}` }}>
-            <h2 style={{ fontFamily: T.fontDisplay, fontSize: 20, margin: "0 0 16px", fontStyle: "italic" }}>Product Vault</h2>
-            {inventory.map((item) => (
-              <div key={item.id} style={{ marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${T.border}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                  <div>
-                    <span style={{ fontSize: 10, background: CAT_COLORS[item.category] + "33", color: T.ink, padding: "2px 6px", borderRadius: 4, marginRight: 6, fontFamily: T.fontMono, fontWeight: 600 }}>{item.category.toUpperCase()}</span>
-                    <span style={{ fontWeight: 600, fontSize: 14, color: T.ink }}>{item.name}</span>
+          <div style={{ display: "flex", gap: 4, alignItems: "center", flexShrink: 0 }}>
+            <button onClick={e => { e.stopPropagation(); setEditDay({ _day: day, label: sc.label, goal: sc.goal, activeProduct: sc.active.product, activeNote: sc.active.note, footnoteText: (sc.footnotes || []).join("\n"), addonProduct: sc.weeklyAddon?.product || "", addonNote: sc.weeklyAddon?.note || "", addonLabel: sc.weeklyAddon?.label || "" }); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, fontSize: 16, padding: "0 4px" }}>✏</button>
+            <span style={{ color: T.inkLight, fontSize: 12, padding: "0 4px" }}>{expanded ? "▲" : "▼"}</span>
+          </div>
+        </div>
+        {expanded && (
+          <div style={{ borderTop: `1px solid ${T.border}`, padding: "12px 17px 15px" }}>
+            <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 10 }}>FULL STEP ORDER</div>
+            {allPmSteps.map((s, idx) => {
+              const isExtra = s.id?.startsWith("pm_extra_");
+              const extraType = isExtra ? ((sc.extraPrefix || []).find(x => x.id === s.id) ? "prefix" : "suffix") : null;
+              return (
+                <div key={s.id} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "9px 11px", background: s.isAddon ? T.greenLight : isExtra ? T.purpleLight : T.bgSubtle, borderRadius: T.radiusSm, marginBottom: 5, border: isExtra ? `1px solid ${T.purple}33` : "1px solid transparent" }}>
+                  <span style={{ fontFamily: T.fontMono, fontSize: 10, color: T.inkLight, minWidth: 18, marginTop: 1 }}>{idx + 1}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: T.fontMono, fontSize: 9, color: s.isAddon ? T.green : isExtra ? T.purple : T.accent, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 2 }}>{s.step || "Step"}</div>
+                    <div style={{ fontFamily: T.fontDisplay, fontSize: 14, fontWeight: 600, color: T.ink }}>{s.product}</div>
+                    {s.note && <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid, marginTop: 1 }}>{s.note}</div>}
                   </div>
-                  <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 99, background: STATUS_COLORS[item.status]?.bg, color: STATUS_COLORS[item.status]?.text, fontWeight: 600 }}>{item.status}</span>
+                  {isExtra && (
+                    <button onClick={() => deletePmStep(s.id, extraType)} style={{ background: T.redLight, border: "none", borderRadius: 7, padding: "3px 8px", cursor: "pointer", fontFamily: T.fontBody, fontSize: 11, color: T.red, fontWeight: 700, flexShrink: 0 }}>✕</button>
+                  )}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ flex: 1 }}><LevelBar level={item.level} T={T} /></div>
-                  <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.inkLight, minWidth: 28, textAlign: "right" }}>{item.level}%</span>
-                </div>
+              );
+            })}
+            <button onClick={() => { setNewPmStep({ type: "prefix", step: "", product: "", note: "" }); setAddingPmStep(day); }} style={{ marginTop: 8, width: "100%", padding: "9px", borderRadius: T.radiusSm, border: `1.5px dashed ${T.accent}55`, background: T.accentLight, fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, color: T.accent, cursor: "pointer" }}>
+              + Add Step to {day} Routine
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Save helpers ──
+  const saveAmStep   = () => { setAmSteps(s => s.map(x => x.id === editAmStep.id ? editAmStep : x)); setEditAmStep(null); showToast("AM step saved ✓"); };
+  const deleteAmStep = () => { setAmSteps(s => s.filter(x => x.id !== editAmStep.id)); setEditAmStep(null); showToast("Step removed"); };
+  const doAddAmStep  = () => { if (!newAmStep.product.trim()) return; setAmSteps(s => [...s, { ...newAmStep, id: "am_" + Date.now() }]); setNewAmStep({ step: "", product: "", note: "" }); setAddingAmStep(false); showToast("AM step added ✓"); };
+  const saveDay = () => { setDaily(prev => ({ ...prev, [editDay._day]: { ...prev[editDay._day], label: editDay.label, goal: editDay.goal, active: { step: "Target", product: editDay.activeProduct, note: editDay.activeNote }, footnotes: (editDay.footnoteText || "").split("\n").filter(f => f.trim()), weeklyAddon: editDay.addonProduct ? { label: editDay.addonLabel, product: editDay.addonProduct, note: editDay.addonNote } : null } })); setEditDay(null); showToast("Day updated ✓"); };
+  const doAddPmStep  = (dayKey) => { if (!newPmStep.product.trim()) return; const newId = "pm_extra_" + Date.now(); setDaily(prev => { const d = prev[dayKey]; const field = newPmStep.type === "prefix" ? "extraPrefix" : "extraSuffix"; return { ...prev, [dayKey]: { ...d, [field]: [...(d[field] || []), { ...newPmStep, id: newId }] } }; }); setNewPmStep({ type: "prefix", step: "", product: "", note: "" }); setAddingPmStep(null); showToast("PM step added ✓"); };
+  const saveItem   = () => { setInventory(inv => inv.map(i => i.id === editItem.id ? editItem : i)); setEditItem(null); showToast("Product saved ✓"); };
+  const deleteItem = () => { setInventory(inv => inv.filter(i => i.id !== editItem.id)); setEditItem(null); showToast("Product removed"); };
+  const doAddItem  = () => { if (!newItem.name.trim()) return; setInventory(inv => [...inv, { ...newItem, id: Date.now() }]); setAddingItem(false); showToast("Product added ✓"); };
+  const saveLog    = () => { setSkinLog(p => [{ ...logForm, date: TODAY_DATE, id: Date.now() }, ...p]); setLogForm({ mood: "😊", oiliness: "Normal", notes: "" }); setShowLog(false); showToast("Skin entry logged ✓"); };
+
+  const cats = ["All", ...Array.from(new Set(inventory.map(i => i.category)))];
+  const filteredInv = filterCat === "All" ? inventory : inventory.filter(i => i.category === filterCat);
+  const isSunday = new Date().getDay() === 0;
+
+  // ── Loading / auth gates ──
+  if (authUser === undefined) {
+    return (
+      <div style={{ minHeight: "100svh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.3s" }}>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${T.border}`, borderTopColor: T.accent, animation: "spin 0.8s linear infinite" }} />
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+  }
+  if (!authUser) return <SignIn dark={dark} toggleDark={toggleDark} />;
+  if (needsOnboard) return <Onboarding user={authUser} onComplete={(prof, am, dy) => { setProfile(prof); setAmSteps(am); setDaily(dy); setInventory([]); setSkinLog([]); setNeedsOnboard(false); }} dark={dark} toggleDark={toggleDark} />;
+
+  // ═══════════════════════════════════════════════════════════════════
+  return (
+    <div style={{ fontFamily: T.fontBody, background: T.bg, minHeight: "100svh", color: T.ink, transition: "background 0.3s, color 0.3s" }}>
+
+      {/* ── HEADER ── */}
+      <div style={{ background: T.bgCard, borderBottom: `1px solid ${T.border}`, paddingTop: `calc(14px + env(safe-area-inset-top))`, paddingLeft: 16, paddingRight: 16, paddingBottom: 12, position: "sticky", top: 0, zIndex: 50, transition: "background 0.3s" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, letterSpacing: "0.14em", marginBottom: 2 }}>SUMMER 2026 · SKIN DASHBOARD</div>
+              <div style={{ fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 600, color: T.ink, fontStyle: "italic", lineHeight: 1 }}>
+                {profile?.displayName?.split(" ")[0]}'s Routine
               </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <DarkToggle dark={dark} toggle={toggleDark} />
+              {profile?.photoURL && <img src={profile.photoURL} alt="" style={{ width: 28, height: 28, borderRadius: "50%", border: `1.5px solid ${T.border}` }} />}
+              <button onClick={signOutUser} style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, background: "none", border: "none", cursor: "pointer", letterSpacing: "0.08em" }}>OUT</button>
+            </div>
+          </div>
+
+          {/* Alerts */}
+          {(lowStockAlerts.length > 0 || expiryAlerts.length > 0 || wishlistAlerts.length > 0) && (
+            <div style={{ marginTop: 9, display: "flex", gap: 5, flexWrap: "wrap" }}>
+              {lowStockAlerts.slice(0, 2).map(i => (
+                <span key={i.id} style={{ background: T.redLight, border: `1px solid ${T.red}88`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.red, fontWeight: 600 }}>⚠ Low: {i.name.split(" ").slice(0, 3).join(" ")}</span>
+              ))}
+              {expiryAlerts.slice(0, 1).map(i => {
+                const d = daysUntilExpiry(i.expiry);
+                return <span key={i.id} style={{ background: T.goldLight, border: `1px solid ${T.gold}88`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.gold, fontWeight: 600 }}>{d < 0 ? "❌ Expired: " : "⏰ Exp soon: "}{i.name.split(" ").slice(0, 3).join(" ")}</span>;
+              })}
+              {wishlistAlerts.slice(0, 1).map(i => (
+                <span key={i.id} style={{ background: T.accentLight, border: `1px solid ${T.accent}55`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.accent, fontWeight: 600 }}>🛒 {i.name.split(" ").slice(0, 4).join(" ")}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: 2, marginTop: 12, background: T.bgSubtle, borderRadius: 99, padding: 3, overflowX: "auto" }}>
+            {[["today", "Today"], ["routine", "Routine"], ["inventory", "Inventory"], ["log", "Log"], ["advisor", "✨ Advisor"]].map(([id, lbl]) => (
+              <button key={id} onClick={() => setTab(id)} style={{ padding: "7px 12px", borderRadius: 99, border: "none", cursor: "pointer", fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, background: tab === id ? T.bgCard : "transparent", color: tab === id ? T.ink : T.inkLight, transition: "all 0.18s", whiteSpace: "nowrap", flexShrink: 0, boxShadow: tab === id ? "0 1px 4px rgba(28,25,23,0.08)" : "none" }}>{lbl}</button>
             ))}
           </div>
-        )}
+        </div>
+      </div>
 
-        {activeTab === "advisor" && (
-          <div style={{ background: T.bgCard, padding: 16, borderRadius: T.radiusLg, border: `1px solid ${T.border}` }}>
-            <AIAdvisor amSteps={amSteps} daily={daily} inventory={inventory} skinLog={skinLog} profile={profile} T={T} />
+      {/* ── BODY ── */}
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: `18px 15px calc(32px + env(safe-area-inset-bottom))` }}>
+
+        {/* ════ TODAY ════ */}
+        {tab === "today" && <>
+          <StreakBadge streak={profile?.streakCount} T={T} />
+
+          {/* Progress */}
+          <div style={{ ...card, marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, fontWeight: 700, letterSpacing: "0.1em" }}>TODAY'S PROGRESS</span>
+              <span style={{ fontFamily: T.fontMono, fontSize: 10, color: allDone ? T.green : T.inkMid, fontWeight: 700 }}>{completedCount}/{allTodayStepIds.length} {allDone ? "✓ All done!" : "steps"}</span>
+            </div>
+            <div style={{ background: T.bgSubtle, borderRadius: 99, height: 6, overflow: "hidden" }}>
+              <div style={{ width: `${allTodayStepIds.length ? (completedCount / allTodayStepIds.length) * 100 : 0}%`, background: allDone ? T.green : T.accent, height: "100%", borderRadius: 99, transition: "width 0.5s ease" }} />
+            </div>
           </div>
+
+          {isSunday && <WeeklyReport skinLog={skinLog} inventory={inventory} T={T} />}
+
+          <Divider label="☀ AM — PROTECT ONLY" color={T.gold} T={T} />
+          {amSteps.map(s => <StepCard key={s.id} s={s} isAm />)}
+          <div style={{ background: T.goldLight, border: `1px solid ${T.gold}55`, borderRadius: T.radiusSm, padding: "9px 13px", marginTop: 2, marginBottom: 4 }}>
+            <span style={{ fontFamily: T.fontMono, fontSize: 9, color: T.gold, fontWeight: 700, letterSpacing: "0.08em" }}>❌ DO NOT USE IN AM: </span>
+            <span style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid }}>Serums · Moisturizers · Heavy layering</span>
+          </div>
+
+          <Divider label={`🌙 PM — ${todaySched.emoji} ${todaySched.label?.toUpperCase()}`} color={todaySched.color} T={T} />
+          <div style={{ background: T.bgCard, border: `1.5px solid ${todaySched.color}44`, borderRadius: T.radiusLg, padding: "12px 16px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: dark ? "none" : "0 1px 4px rgba(28,25,23,0.05)" }}>
+            <div>
+              <div style={{ fontFamily: T.fontMono, fontSize: 9, color: todaySched.color, fontWeight: 700, letterSpacing: "0.09em", marginBottom: 4 }}>TONIGHT'S GOAL</div>
+              <div style={{ fontFamily: T.fontDisplay, fontSize: 16, fontWeight: 600, color: T.ink }}>{todaySched.goal}</div>
+            </div>
+            <span style={{ fontSize: 24 }}>{todaySched.emoji}</span>
+          </div>
+          {todayPMSteps.map(s => <StepCard key={s.id} s={s} isAm={false} />)}
+          {(todaySched.footnotes || []).length > 0 && (
+            <div style={{ marginTop: 10, background: T.goldLight, border: `1px solid ${T.gold}55`, borderRadius: T.radiusLg, padding: "12px 16px" }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.gold, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 8 }}>⚡ TONIGHT'S RULES</div>
+              {todaySched.footnotes.map((fn, i) => (
+                <div key={i} style={{ fontFamily: T.fontBody, fontSize: 12, color: T.inkMid, lineHeight: 1.65, marginBottom: i < todaySched.footnotes.length - 1 ? 4 : 0 }}>{fn}</div>
+              ))}
+            </div>
+          )}
+        </>}
+
+        {/* ════ ROUTINE ════ */}
+        {tab === "routine" && <>
+          <Divider label="☀ AM ROUTINE (DAILY)" color={T.gold} T={T} action={{ label: "+ Add AM Step", onClick: () => { setNewAmStep({ step: "", product: "", note: "" }); setAddingAmStep(true); } }} />
+          {amSteps.map(s => (
+            <div key={s.id} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.gold, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 4 }}>{s.step}</div>
+                <div style={{ fontFamily: T.fontDisplay, fontSize: 14, fontWeight: 600, color: T.ink, marginBottom: s.note ? 2 : 0 }}>{s.product}</div>
+                {s.note && <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid }}>{s.note}</div>}
+              </div>
+              <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                <button onClick={() => setEditAmStep({ ...s })} style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, fontSize: 16, padding: "0 4px" }}>✏</button>
+                <button onClick={() => { setAmSteps(prev => prev.filter(x => x.id !== s.id)); showToast("Step removed"); }} style={{ background: T.redLight, border: "none", borderRadius: 7, padding: "3px 8px", cursor: "pointer", fontFamily: T.fontBody, fontSize: 11, color: T.red, fontWeight: 700 }}>✕</button>
+              </div>
+            </div>
+          ))}
+
+          <Divider label="🌙 PM WEEKLY SCHEDULE" color={T.accent} T={T} />
+          {DAYS.map(day => <DayRoutineCard key={day} day={day} />)}
+
+          <div style={{ marginTop: 18, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: T.radiusLg, padding: "18px 20px", boxShadow: dark ? "none" : "0 2px 8px rgba(28,25,23,0.06)" }}>
+            <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.accent, fontWeight: 700, letterSpacing: "0.13em", marginBottom: 8 }}>🔥 GOLDEN RULE</div>
+            <div style={{ fontFamily: T.fontDisplay, fontSize: 17, fontWeight: 600, color: T.ink, fontStyle: "italic", marginBottom: 14, lineHeight: 1.4 }}>"AM = breathable skin. PM = one job only."</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+              {[["Full-face moisturizer", "❌ Never"], ["Cheeks/jaw moisturizer", "✔ Yes"], ["T-zone moisturizer", "✔ Residue only"], ["AM serums/actives", "❌ Never"]].map(([r, v]) => (
+                <div key={r} style={{ background: T.bgSubtle, borderRadius: T.radiusSm, padding: "9px 12px" }}>
+                  <div style={{ fontFamily: T.fontBody, fontSize: 10, color: T.inkLight, marginBottom: 3 }}>{r}</div>
+                  <div style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 700, color: v.startsWith("✔") ? T.green : T.red }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>}
+
+        {/* ════ INVENTORY ════ */}
+        {tab === "inventory" && <>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
+            {cats.map(c => (
+              <button key={c} onClick={() => setFilterCat(c)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, padding: "6px 13px", borderRadius: 99, background: filterCat === c ? T.accent : T.bgCard, color: filterCat === c ? "#fff" : T.inkMid, border: `1px solid ${filterCat === c ? T.accent : T.border}`, cursor: "pointer", transition: "all 0.15s" }}>{c}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+            <button onClick={() => { setNewItem({ name: "", category: "Serum", status: "In Use", level: 100, notes: "", expiry: "" }); setAddingItem(true); }} style={{ ...btnBase, background: T.accent, color: "#fff", fontSize: 13, padding: "9px 18px" }}>+ Add Product</button>
+          </div>
+
+          {filteredInv.length === 0 && (
+            <div style={{ textAlign: "center", padding: "40px 20px", color: T.inkLight, fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic" }}>No products yet.</div>
+          )}
+
+          {filteredInv.map(item => {
+            const sc = STATUS_COLORS[item.status] || STATUS_COLORS["Empty"];
+            const es = expiryStatus(item.expiry);
+            const showExpWarn = es && es !== "ok";
+            const dLeft = daysUntilExpiry(item.expiry);
+            const daysLeft = item.level > 0 && item.status === "In Use" ? Math.round(item.level / 2) : null;
+            return (
+              <div key={item.id} style={{ ...card, border: showExpWarn ? `1.5px solid ${dLeft < 0 ? T.red : T.gold}` : `1px solid ${T.border}`, background: T.bgCard }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: item.level > 0 && item.status !== "Wishlist" ? 10 : 0 }}>
+                  <div style={{ flex: 1, paddingRight: 8 }}>
+                    <div style={{ display: "flex", gap: 5, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
+                      <span style={{ background: (CAT_COLORS[item.category] || "#e5e7eb") + "33", fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 99, letterSpacing: "0.06em", color: T.inkMid }}>{item.category}</span>
+                      <span style={{ background: sc.bg, color: sc.text, fontFamily: T.fontBody, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>● {item.status}</span>
+                      {showExpWarn && <span style={{ background: dLeft < 0 ? T.redLight : T.goldLight, color: dLeft < 0 ? T.red : T.gold, fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{dLeft < 0 ? `❌ EXPIRED (${Math.abs(dLeft)}d ago)` : `⏰ ${dLeft}d left`}</span>}
+                      {daysLeft && item.level <= 20 && <span style={{ background: T.redLight, color: T.red, fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>🛒 ~{daysLeft}d left</span>}
+                    </div>
+                    <div style={{ fontFamily: T.fontDisplay, fontSize: 14, fontWeight: 600, color: T.ink }}>{item.name}</div>
+                    {item.notes && <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid, marginTop: 2 }}>{item.notes}</div>}
+                  </div>
+                  <button onClick={() => setEditItem({ ...item })} style={{ background: "none", border: "none", cursor: "pointer", color: T.inkLight, fontSize: 18, padding: "0 4px", flexShrink: 0 }}>✏</button>
+                </div>
+                {item.status !== "Wishlist" && item.level > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                    <LevelBar level={item.level} T={T} />
+                    <span style={{ fontFamily: T.fontMono, fontSize: 10, color: T.inkLight, minWidth: 30 }}>{item.level}%</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </>}
+
+        {/* ════ SKIN LOG ════ */}
+        {tab === "log" && <>
+          <button onClick={() => setShowLog(true)} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic", marginBottom: 18 }}>
+            + Log Today's Skin
+          </button>
+          {skinLog.length >= 3 && <WeeklyReport skinLog={skinLog} inventory={inventory} T={T} />}
+          {skinLog.length === 0 && (
+            <div style={{ textAlign: "center", padding: "40px 20px", color: T.inkLight, fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic" }}>No entries yet. Log your first day!</div>
+          )}
+          {skinLog.map(e => (
+            <div key={e.id} style={card}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontFamily: T.fontMono, fontSize: 10, color: T.inkLight }}>{e.date}</span>
+                <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
+                  <span style={{ fontSize: 18 }}>{e.mood}</span>
+                  <span style={{ fontFamily: T.fontBody, fontSize: 10, fontWeight: 600, background: T.bgSubtle, padding: "2px 9px", borderRadius: 99, color: T.inkMid }}>{e.oiliness}</span>
+                </div>
+              </div>
+              {e.notes && <div style={{ fontFamily: T.fontBody, fontSize: 12, color: T.ink, lineHeight: 1.6 }}>{e.notes}</div>}
+            </div>
+          ))}
+        </>}
+
+        {/* ════ AI ADVISOR ════ */}
+        {tab === "advisor" && (
+          <AIAdvisor amSteps={amSteps} daily={daily} inventory={inventory} skinLog={skinLog} profile={profile} T={T} />
         )}
-      </main>
+      </div>
+
+      {/* ════ MODALS ════ */}
+      {editAmStep && (
+        <Modal title="Edit AM Step" onClose={() => setEditAmStep(null)} T={T}>
+          <Field label="Step Label" value={editAmStep.step}    onChange={v => setEditAmStep(s => ({ ...s, step: v }))}    T={T} />
+          <Field label="Product"    value={editAmStep.product} onChange={v => setEditAmStep(s => ({ ...s, product: v }))} T={T} />
+          <Field label="Note"       value={editAmStep.note}    onChange={v => setEditAmStep(s => ({ ...s, note: v }))}    T={T} />
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button onClick={saveAmStep}   style={{ ...btnBase, flex: 1, background: T.accent,   color: "#fff" }}>Save</button>
+            <button onClick={deleteAmStep} style={{ ...btnBase, flex: 1, background: T.redLight, color: T.red }}>Delete</button>
+          </div>
+        </Modal>
+      )}
+
+      {addingAmStep && (
+        <Modal title="Add AM Step" onClose={() => setAddingAmStep(false)} T={T}>
+          <div style={{ background: T.goldLight, border: `1px solid ${T.gold}55`, borderRadius: T.radiusSm, padding: "10px 13px", marginBottom: 16, fontFamily: T.fontBody, fontSize: 12, color: T.inkMid, lineHeight: 1.6 }}>
+            ☀ AM steps = gentle + protective only. Cleansers, toners, mists, SPF. No actives.
+          </div>
+          <Field label="Step Label" value={newAmStep.step}    onChange={v => setNewAmStep(s => ({ ...s, step: v }))}    placeholder="e.g. Tone" T={T} />
+          <Field label="Product"    value={newAmStep.product} onChange={v => setNewAmStep(s => ({ ...s, product: v }))} placeholder="e.g. Klairs Supple Prep Toner" T={T} />
+          <Field label="Note"       value={newAmStep.note}    onChange={v => setNewAmStep(s => ({ ...s, note: v }))}    placeholder="e.g. Pat gently" T={T} />
+          <button onClick={doAddAmStep} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Add to AM Routine</button>
+        </Modal>
+      )}
+
+      {editDay && (
+        <Modal title={`Edit ${editDay._day} — ${editDay.label}`} onClose={() => setEditDay(null)} T={T}>
+          <Field label="Night Label"    value={editDay.label}         onChange={v => setEditDay(d => ({ ...d, label: v }))}         T={T} />
+          <Field label="Goal"           value={editDay.goal}          onChange={v => setEditDay(d => ({ ...d, goal: v }))}          T={T} />
+          <Field label="Active Product" value={editDay.activeProduct} onChange={v => setEditDay(d => ({ ...d, activeProduct: v }))} T={T} />
+          <Field label="Active Note"    value={editDay.activeNote}    onChange={v => setEditDay(d => ({ ...d, activeNote: v }))}    T={T} />
+          <Field label="Footnotes (one per line)" type="textarea" value={editDay.footnoteText} onChange={v => setEditDay(d => ({ ...d, footnoteText: v }))} T={T} />
+          <Field label="Weekly Add-on Product" value={editDay.addonProduct} onChange={v => setEditDay(d => ({ ...d, addonProduct: v }))} placeholder="Optional" T={T} />
+          <Field label="Weekly Add-on Label"   value={editDay.addonLabel}   onChange={v => setEditDay(d => ({ ...d, addonLabel: v }))}   placeholder="Optional" T={T} />
+          <Field label="Weekly Add-on Note"    value={editDay.addonNote}    onChange={v => setEditDay(d => ({ ...d, addonNote: v }))}    placeholder="Optional" T={T} />
+          <button onClick={saveDay} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Save</button>
+        </Modal>
+      )}
+
+      {addingPmStep && (
+        <Modal title={`Add Step — ${addingPmStep} PM`} onClose={() => setAddingPmStep(null)} T={T}>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "block", fontSize: 10, fontWeight: 600, color: T.inkLight, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: T.fontBody }}>Position</label>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[["prefix", "Before Active"], ["suffix", "After Sealing"]].map(([val, lbl]) => (
+                <button key={val} onClick={() => setNewPmStep(s => ({ ...s, type: val }))} style={{ flex: 1, padding: "9px", borderRadius: T.radiusSm, cursor: "pointer", border: `2px solid ${newPmStep.type === val ? T.accent : T.border}`, background: newPmStep.type === val ? T.accentLight : T.bgSubtle, fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, color: newPmStep.type === val ? T.accent : T.inkMid }}>{lbl}</button>
+              ))}
+            </div>
+          </div>
+          <Field label="Step Label"   value={newPmStep.step}    onChange={v => setNewPmStep(s => ({ ...s, step: v }))}    placeholder="e.g. Essence" T={T} />
+          <Field label="Product Name" value={newPmStep.product} onChange={v => setNewPmStep(s => ({ ...s, product: v }))} placeholder="e.g. COSRX Snail Mucin 96" T={T} />
+          <Field label="Note"         value={newPmStep.note}    onChange={v => setNewPmStep(s => ({ ...s, note: v }))}    placeholder="Optional" T={T} />
+          <button onClick={() => doAddPmStep(addingPmStep)} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Add to {addingPmStep} Routine</button>
+        </Modal>
+      )}
+
+      {editItem && (
+        <Modal title="Edit Product" onClose={() => setEditItem(null)} T={T}>
+          <Field label="Product Name" value={editItem.name}     onChange={v => setEditItem(i => ({ ...i, name: v }))}                                       T={T} />
+          <Field label="Category"     value={editItem.category} onChange={v => setEditItem(i => ({ ...i, category: v }))} options={["Cleanser","Prep","Serum","Moisturizer","Mask","Sunscreen","To Buy","Other"]} T={T} />
+          <Field label="Status"       value={editItem.status}   onChange={v => setEditItem(i => ({ ...i, status: v }))}   options={["In Use","Sealed/Backup","Paused","Low Stock","Empty","Wishlist"]}            T={T} />
+          <Field label="Level (%)"    value={editItem.level}    onChange={v => setEditItem(i => ({ ...i, level: Number(v) }))} type="number"                 T={T} />
+          <Field label="Expiry Date"  value={editItem.expiry}   onChange={v => setEditItem(i => ({ ...i, expiry: v }))}   type="date"                        T={T} />
+          <Field label="Notes"        value={editItem.notes}    onChange={v => setEditItem(i => ({ ...i, notes: v }))}                                       T={T} />
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button onClick={saveItem}   style={{ ...btnBase, flex: 1, background: T.accent,   color: "#fff" }}>Save</button>
+            <button onClick={deleteItem} style={{ ...btnBase, flex: 1, background: T.redLight, color: T.red }}>Remove</button>
+          </div>
+        </Modal>
+      )}
+
+      {addingItem && (
+        <Modal title="Add Product" onClose={() => setAddingItem(false)} T={T}>
+          <Field label="Product Name" value={newItem.name}     onChange={v => setNewItem(i => ({ ...i, name: v }))}     placeholder="Product name"             T={T} />
+          <Field label="Category"     value={newItem.category} onChange={v => setNewItem(i => ({ ...i, category: v }))} options={["Cleanser","Prep","Serum","Moisturizer","Mask","Sunscreen","To Buy","Other"]} T={T} />
+          <Field label="Status"       value={newItem.status}   onChange={v => setNewItem(i => ({ ...i, status: v }))}   options={["In Use","Sealed/Backup","Paused","Low Stock","Empty","Wishlist"]}            T={T} />
+          <Field label="Level (%)"    value={newItem.level}    onChange={v => setNewItem(i => ({ ...i, level: Number(v) }))} type="number"                    T={T} />
+          <Field label="Expiry Date"  value={newItem.expiry}   onChange={v => setNewItem(i => ({ ...i, expiry: v }))}   type="date"                           T={T} />
+          <Field label="Notes"        value={newItem.notes}    onChange={v => setNewItem(i => ({ ...i, notes: v }))}    placeholder="Optional"                T={T} />
+          <button onClick={doAddItem} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Add Product</button>
+        </Modal>
+      )}
+
+      {showLog && (
+        <Modal title="Log Today's Skin" onClose={() => setShowLog(false)} T={T}>
+          <Field label="Mood"            value={logForm.mood}     onChange={v => setLogForm(l => ({ ...l, mood: v }))}     options={["😊", "😐", "😞", "🥵", "😴"]}                       T={T} />
+          <Field label="T-Zone Oiliness" value={logForm.oiliness} onChange={v => setLogForm(l => ({ ...l, oiliness: v }))} options={["Very Oily", "Oily", "Normal", "Balanced", "Dry"]} T={T} />
+          <Field label="Notes" type="textarea" value={logForm.notes} onChange={v => setLogForm(l => ({ ...l, notes: v }))} placeholder="Breakouts, reactions, texture…" T={T} />
+          <button onClick={saveLog} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff" }}>Save Entry</button>
+        </Modal>
+      )}
+
+      {toast && <Toast msg={toast} T={T} onDone={() => setToast(null)} />}
     </div>
   );
 }
