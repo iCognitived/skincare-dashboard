@@ -386,24 +386,20 @@ function StreakBadge({ streak, T }) {
 }
 
 // ── AI Advisor ────────────────────────────────────────────────────────────
-function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
+import React, { useState, useRef, useEffect } from "react";
+
+export default function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
 
-  useEffect(() => { if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-
-  const systemPrompt = `You are a knowledgeable, friendly skincare advisor. You have full context about this user's routine, inventory, and skin log.
-
-USER PROFILE: Skin type: ${profile?.skinType || "Not specified"}, Name: ${profile?.displayName || "User"}, Streak: ${profile?.streakCount || 0} days
-
-AM ROUTINE: ${JSON.stringify(amSteps?.map(s => s.product))}
-PM SCHEDULE: ${JSON.stringify(Object.entries(daily || {}).map(([day, d]) => ({ day, active: d.active?.product })))}
-INVENTORY: ${JSON.stringify(inventory?.map(i => ({ name: i.name, status: i.status, level: i.level + "%" })))}
-RECENT LOG: ${JSON.stringify(skinLog?.slice(0, 5).map(e => ({ date: e.date, mood: e.mood, oiliness: e.oiliness })))}
-
-Give concise, personalised advice. Keep responses short and mobile-friendly. Be warm, not clinical.`;
+  // Auto-scroll effect
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, loading]);
 
   const send = async () => {
     const text = input.trim();
@@ -418,30 +414,71 @@ Give concise, personalised advice. Keep responses short and mobile-friendly. Be 
     try {
       const historyPayload = updatedMessages.slice(-12);
 
-      const res = await fetch("/api/chat", {
+      // 1. Safe serialization fallbacks to protect data boundaries
+      const safeAm = Array.isArray(amSteps) ? amSteps.map(s => s?.product || "") : [];
+      const safeDaily = daily ? Object.entries(daily).map(([day, d]) => ({ day, active: d?.active?.product || "" })) : [];
+      const safeInventory = Array.isArray(inventory) ? inventory.map(i => ({ name: i?.name || "", status: i?.status || "", level: (i?.level || 0) + "%" })) : [];
+      const safeLog = Array.isArray(skinLog) ? skinLog.slice(0, 5).map(e => ({ date: e?.date || "", mood: e?.mood || "", oiliness: e?.oiliness || "" })) : [];
+
+      // 2. Build a completely sanitized system instruction 
+      const systemPrompt = [
+        "You are a knowledgeable, friendly skincare advisor. You have full context about this user's routine, inventory, and skin log.",
+        `USER PROFILE: Skin type: ${profile?.skinType || "Not specified"}, Name: ${profile?.displayName || "User"}, Streak: ${profile?.streakCount || 0} days`,
+        `AM ROUTINE: ${JSON.stringify(safeAm)}`,
+        `PM SCHEDULE: ${JSON.stringify(safeDaily)}`,
+        `INVENTORY: ${JSON.stringify(safeInventory)}`,
+        `RECENT LOG: ${JSON.stringify(safeLog)}`,
+        "Give concise, personalised advice. Keep responses short and mobile-friendly. Be warm, not clinical."
+      ].join("\n");
+
+      // 3. Absolute path resolution fallback
+      const targetUrl = window.location.origin + "/api/chat";
+
+      const res = await fetch(targetUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
-          system: systemPrompt,
+          system: systemPrompt, // Points cleanly to our dynamic sanitization list now
           messages: historyPayload,
         }),
       });
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMsg = "Unknown API Error";
+        try {
+          const errJson = JSON.parse(errorText);
+          errorMsg = errJson.error || errorMsg;
+        } catch {
+          errorMsg = errorText || errorMsg;
+        }
+        throw new Error(errorMsg);
+      }
+
       const data = await res.json();
 
-      if (!res.ok || data.error) {
-        setMessages(prev => [...prev, { role: "assistant", content: "Error: " + (data.error || "Unknown error") }]);
+      if (data.error) {
+        setMessages(prev => [...prev, { role: "assistant", content: "Error: " + data.error }]);
       } else {
         setMessages(prev => [...prev, { role: "assistant", content: data.text }]);
       }
     } catch (err) {
-      setMessages(prev => [...prev, { role: "assistant", content: "Network error: " + err.message }]);
+      console.error("Fetch Exception Captured:", err);
+      setMessages(prev => [...prev, { role: "assistant", content: "Connection issue: " + err.message }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const suggestions = ["What's causing my oily T-zone?", "Can I add Vitamin C to my routine?", "Is my routine good for PIH?", "What should I restock first?"];
+  const suggestions = [
+    "What's causing my oily T-zone?", 
+    "Can I add Vitamin C to my routine?", 
+    "Is my routine good for PIH?", 
+    "What should I restock first?"
+  ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100svh - 180px)" }}>
@@ -450,32 +487,64 @@ Give concise, personalised advice. Keep responses short and mobile-friendly. Be 
           <div>
             <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: T.radiusLg, padding: "18px 20px", marginBottom: 18 }}>
               <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.accent, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 8 }}>AI SKIN ADVISOR</div>
-              <div style={{ fontFamily: T.fontDisplay, fontSize: 18, fontWeight: 600, color: T.ink, marginBottom: 4, fontStyle: "italic" }}>Hi {(profile?.displayName || "").split(" ")[0]}! I know your routine inside out.</div>
-              <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkMid, lineHeight: 1.7 }}>Ask me about ingredient conflicts, routine tweaks, product recs, or why your skin is doing that thing it's doing.</div>
+              <div style={{ fontFamily: T.fontDisplay, fontSize: 18, fontWeight: 600, color: T.ink, marginBottom: 4, fontStyle: "italic" }}>
+                Hi {(profile?.displayName || "").split(" ")[0]}! I know your routine inside out.
+              </div>
+              <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkMid, lineHeight: 1.7 }}>
+                Ask me about ingredient conflicts, routine tweaks, product recs, or why your skin is doing that thing it's doing.
+              </div>
             </div>
             <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 10 }}>QUICK QUESTIONS</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
               {suggestions.map(s => (
-                <button key={s} onClick={() => setInput(s)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 500, color: T.accent, background: T.accentLight, border: `1px solid ${T.accent}44`, borderRadius: 99, padding: "6px 13px", cursor: "pointer" }}>{s}</button>
+                <button key={s} onClick={() => setInput(s)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 500, color: T.accent, background: T.accentLight, border: `1px solid ${T.accent}44`, borderRadius: 99, padding: "6px 13px", cursor: "pointer" }}>
+                  {s}
+                </button>
               ))}
             </div>
           </div>
         )}
+        
         {messages.map((m, i) => (
           <div key={i} style={{ marginBottom: 12, display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-            <div style={{ maxWidth: "82%", padding: "11px 14px", borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.role === "user" ? T.accent : T.bgCard, border: m.role === "assistant" ? `1px solid ${T.border}` : "none", fontFamily: T.fontBody, fontSize: 13, color: m.role === "user" ? "#fff" : T.ink, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.content}</div>
+            <div style={{ 
+              maxWidth: "82%", 
+              padding: "11px 14px", 
+              borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", 
+              background: m.role === "user" ? T.accent : T.bgCard, 
+              border: m.role === "assistant" ? `1px solid ${T.border}` : "none", 
+              fontFamily: T.fontBody, 
+              fontSize: 13, 
+              color: m.role === "user" ? "#fff" : T.ink, 
+              lineHeight: 1.6, 
+              whiteSpace: "pre-wrap" 
+            }}>
+              {m.content}
+            </div>
           </div>
         ))}
+        
         {loading && (
           <div style={{ display: "flex", gap: 5, padding: "10px 14px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "16px 16px 16px 4px", width: "fit-content", marginBottom: 12 }}>
-            {[0, 1, 2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, opacity: 0.5, animation: `bounce 1s ease-in-out ${i * 0.15}s infinite` }} />)}
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, opacity: 0.5, animation: `bounce 1s ease-in-out ${i * 0.15}s infinite` }} />
+            ))}
           </div>
         )}
         <div ref={bottomRef} />
       </div>
+      
       <div style={{ display: "flex", gap: 8, paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Ask anything about your skin…" style={{ flex: 1, padding: "11px 14px", borderRadius: T.radiusSm, border: `1.5px solid ${T.border}`, fontFamily: T.fontBody, fontSize: 16, outline: "none", background: T.bgSubtle, color: T.ink }} />
-        <button onClick={send} disabled={!input.trim() || loading} style={{ background: input.trim() ? T.accent : T.bgSubtle, color: input.trim() ? "#fff" : T.inkLight, border: "none", borderRadius: T.radiusSm, padding: "11px 16px", cursor: "pointer", fontFamily: T.fontBody, fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>Send</button>
+        <input 
+          value={input} 
+          onChange={e => setInput(e.target.value)} 
+          onKeyDown={e => e.key === "Enter" && send()} 
+          placeholder="Ask anything about your skin…" 
+          style={{ flex: 1, padding: "11px 14px", borderRadius: T.radiusSm, border: `1.5px solid ${T.border}`, fontFamily: T.fontBody, fontSize: 16, outline: "none", background: T.bgSubtle, color: T.ink }} 
+        />
+        <button onClick={send} disabled={!input.trim() || loading} style={{ background: input.trim() ? T.accent : T.bgSubtle, color: input.trim() ? "#fff" : T.inkLight, border: "none", borderRadius: T.radiusSm, padding: "11px 16px", cursor: "pointer", fontFamily: T.fontBody, fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+          Send
+        </button>
       </div>
       <style>{`@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }`}</style>
     </div>
