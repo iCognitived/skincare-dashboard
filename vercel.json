@@ -1,3 +1,11 @@
 {
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "functions": {
+    "api/chat.cjs": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/api/chat.cjs" }
+  ]
 }
