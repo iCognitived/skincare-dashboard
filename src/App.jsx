@@ -426,7 +426,7 @@ Your role:
     setLoading(true);
 
     try {
-const res = await fetch("/api/chat", {
+const res = await fetch("/api/chat.cjs", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ system: systemPrompt, messages: [...messages, userMsg] }),
