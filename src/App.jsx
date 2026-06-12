@@ -81,9 +81,9 @@ const SKIN_TEMPLATES = {
     emoji: "⚖️", label: "Combination",
     desc: "Balance T-zone oil while hydrating dry cheeks",
     am: [
-      { id: "am1", step: "Cleanse",  product: "Cetaphil Gentle Skin Cleanser",    note: "Works for both zones" },
-      { id: "am2", step: "Prep",     product: "Rose Water Mist",                  note: "Optional light mist" },
-      { id: "am3", step: "Protect",  product: "Hyphen All I Need SPF 50 PA++++", note: "FINAL step — nothing after this" },
+      { id: "am1", step: "Cleanse",  product: "Product 1",  note: "Add your cleanser" },
+      { id: "am2", step: "Prep",     product: "Product 2",  note: "Add your prep step" },
+      { id: "am3", step: "Protect",  product: "SPF",        note: "FINAL step — nothing after this" },
     ],
     daily: buildDailyForSkinType("combo"),
   },
@@ -274,7 +274,7 @@ function Onboarding({ user, onComplete, dark, toggleDark }) {
     await saveProfile(user.uid, profile);
     await saveUserData(user.uid, "amSteps",   template.am);
     await saveUserData(user.uid, "daily",     template.daily);
-    await saveUserData(user.uid, "inventory", []);
+    // FIX 2: Do NOT save inventory — let each user's inventory start empty/default
     await saveUserData(user.uid, "skinLog",   []);
     await saveUserData(user.uid, "checked",   { date: TODAY_DATE, steps: {} });
     onComplete(profile, template.am, template.daily);
@@ -506,9 +506,10 @@ export default function App() {
   const [needsOnboard, setNeedsOnboard] = useState(false);
 
   // ── App data ──
-  const [amSteps,   setAmSteps]   = useState(MY_AM_DEFAULT);
-  const [daily,     setDaily]     = useState(MY_DAILY_DEFAULT);
-  const [inventory, setInventory] = useState([]);
+  // FIX 2: Use generic Combo template as initial state, not personal products
+  const [amSteps,   setAmSteps]   = useState(SKIN_TEMPLATES.Combo.am);
+  const [daily,     setDaily]     = useState(SKIN_TEMPLATES.Combo.daily);
+  const [inventory, setInventory] = useState(MY_INVENTORY_DEFAULT);
   const [skinLog,   setSkinLog]   = useState([]);
   const [checked,   setChecked]   = useState({ date: TODAY_DATE, steps: {} });
 
@@ -547,11 +548,12 @@ export default function App() {
       loadUserData(uid, "amSteps"), loadUserData(uid, "daily"),
       loadUserData(uid, "inventory"), loadUserData(uid, "skinLog"), loadUserData(uid, "checked"),
     ]);
-    if (am)  setAmSteps(am);
-    if (dy)  setDaily(dy);
-    if (inv) setInventory(inv);
-    if (log) setSkinLog(log);
-    if (chk) setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
+    if (am)                    setAmSteps(am);
+    if (dy)                    setDaily(dy);
+    // FIX 1: Only overwrite inventory if Firebase actually has items saved
+    if (inv && inv.length > 0) setInventory(inv);
+    if (log)                   setSkinLog(log);
+    if (chk)                   setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
   };
 
   const saveDebounced = useCallback((field, value) => {
