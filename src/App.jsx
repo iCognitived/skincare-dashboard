@@ -8,7 +8,6 @@ import {
   loadUserData, saveUserData, loadProfile, saveProfile,
 } from "./firebase";
 
-// ── Google Fonts (same as Fragrance Vault) ────────────────────────────────
 if (!document.getElementById("sc-fonts")) {
   const l = document.createElement("link");
   l.id   = "sc-fonts";
@@ -17,12 +16,10 @@ if (!document.getElementById("sc-fonts")) {
   document.head.appendChild(l);
 }
 
-// ── Design tokens — identical pattern to Fragrance Vault ─────────────────
 const makeTokens = (dark) => ({
   bg:          dark ? "#141210" : "#F7F4EF",
   bgCard:      dark ? "#1E1B18" : "#FFFFFF",
   bgSubtle:    dark ? "#2A2520" : "#F0EDE8",
-  bgHero:      dark ? "#231F1A" : "#FFFFFF",
   border:      dark ? "#2E2926" : "#E8E3DA",
   borderDark:  dark ? "#3D3732" : "#D5CEC3",
   ink:         dark ? "#F2EDE6" : "#1C1917",
@@ -49,105 +46,128 @@ const makeTokens = (dark) => ({
   radiusSm: "8px",
 });
 
-// ── Constants ─────────────────────────────────────────────────────────────
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TODAY_IDX = (() => { const d = new Date().getDay(); return d === 0 ? 6 : d - 1; })();
 const TODAY = DAYS[TODAY_IDX];
 const TODAY_DATE = new Date().toLocaleDateString("en-CA");
 
-// ── Skin type templates ───────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// GENERIC daily template — used for ALL new user onboarding
+// No personal products, no Varun-specific rules
+// ─────────────────────────────────────────────────────────────────────
+function buildGenericDaily() {
+  return {
+    Mon: { label: "Barrier Night",            color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Repair + strengthen barrier",       active: { step: "Target", product: "Ceramide Serum or Repair Serum",      note: "Barrier restoration" }, footnotes: ["⚠ No actives tonight — barrier nights only."],                                           weeklyAddon: null },
+    Tue: { label: "Oil Control Night",         color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Reduce sebum + control pores",      active: { step: "Target", product: "Niacinamide 10% + Zinc",              note: "T-zone focus" },        footnotes: ["⚠ Niacinamide only tonight."],                                                            weeklyAddon: null },
+    Wed: { label: "Oil Control + Pore Reset",  color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Decongest + refine pores",          active: { step: "Target", product: "Niacinamide 10% + Zinc",              note: "T-zone focus" },        footnotes: ["🗓 Weekly add-on goes BEFORE Niacinamide.", "📍 T-zone only."],                             weeklyAddon: { label: "Pore Reset", product: "Rice Water Pads or Toner Pads", note: "T-zone only — apply BEFORE Niacinamide" } },
+    Thu: { label: "Pigment Night",             color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Fade dark spots + even tone",       active: { step: "Target", product: "Brightening or Pigment Serum",        note: "Full face" },           footnotes: ["⚠ Brightening serum only tonight — no other actives."],                                  weeklyAddon: null },
+    Fri: { label: "Barrier Night",             color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Recovery + hydration rebuild",      active: { step: "Target", product: "Ceramide Serum or Repair Serum",      note: "Barrier restoration" }, footnotes: ["⚠ No actives tonight — barrier nights only."],                                           weeklyAddon: null },
+    Sat: { label: "Reset Night",               color: "#a855f7", bg: "#faf5ff", emoji: "🟪", goal: "Hydration reset + deep pore clean", active: { step: "Target", product: "Hyaluronic Acid Serum",               note: "Full face, damp skin" }, footnotes: ["⚠ HA only tonight.", "🗓 Clay mask optional — T-zone only, every 10–14 days."],         weeklyAddon: { label: "Clay Cleanse (every 10–14 days)", product: "Clay Mask of choice", note: "T-zone only — not mandatory every week" } },
+    Sun: { label: "Pigment Night",             color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading",    active: { step: "Target", product: "Brightening or Pigment Serum",        note: "Full face" },           footnotes: ["⚠ Brightening serum only tonight — no other actives."],                                  weeklyAddon: null },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// SKIN TYPE TEMPLATES — generic AM steps for onboarding
+// No personal products
+// ─────────────────────────────────────────────────────────────────────
 const SKIN_TEMPLATES = {
   Oily: {
     emoji: "💧", label: "Oily / Acne-prone",
     desc: "Focus on sebum control, pore care, lightweight hydration",
     am: [
-      { id: "am1", step: "Cleanse",  product: "CeraVe Foaming Facial Cleanser",         note: "Gel cleanser — removes excess oil" },
-      { id: "am2", step: "Tone",     product: "Klairs Supple Preparation Toner",        note: "Lightweight — no alcohol" },
-      { id: "am3", step: "Protect",  product: "Skin Aqua UV Super Moisture Gel SPF50+", note: "FINAL step — gel formula, non-greasy" },
+      { id: "am1", step: "Cleanse",  product: "Gel Cleanser",          note: "e.g. CeraVe Foaming — removes excess oil" },
+      { id: "am2", step: "Tone",     product: "Hydrating Toner",       note: "Lightweight, no alcohol" },
+      { id: "am3", step: "Protect",  product: "SPF 50 (gel formula)",  note: "FINAL step — nothing after this" },
     ],
-    daily: buildDailyForSkinType("oily"),
+    daily: buildGenericDaily(),
   },
   Dry: {
     emoji: "🌸", label: "Dry / Sensitive",
     desc: "Focus on barrier repair, deep hydration, gentle actives",
     am: [
-      { id: "am1", step: "Cleanse",  product: "La Roche-Posay Toleriane Hydrating Cleanser", note: "Cream cleanser — does not strip" },
-      { id: "am2", step: "Prep",     product: "Hada Labo Gokujyun Hyaluronic Lotion",        note: "Pat into damp skin" },
-      { id: "am3", step: "Protect",  product: "Altruist SPF50 Face Fluid",                   note: "FINAL step — hydrating finish" },
+      { id: "am1", step: "Cleanse",  product: "Cream Cleanser",        note: "e.g. La Roche-Posay Toleriane — does not strip" },
+      { id: "am2", step: "Prep",     product: "Hydrating Lotion/Toner",note: "Pat into damp skin" },
+      { id: "am3", step: "Protect",  product: "SPF 50 (hydrating)",    note: "FINAL step — nothing after this" },
     ],
-    daily: buildDailyForSkinType("dry"),
+    daily: buildGenericDaily(),
   },
   Combo: {
     emoji: "⚖️", label: "Combination",
     desc: "Balance T-zone oil while hydrating dry cheeks",
     am: [
-      { id: "am1", step: "Cleanse",  product: "Product 1",  note: "Add your cleanser" },
-      { id: "am2", step: "Prep",     product: "Product 2",  note: "Add your prep step" },
-      { id: "am3", step: "Protect",  product: "SPF",        note: "FINAL step — nothing after this" },
+      { id: "am1", step: "Cleanse",  product: "Gentle Cleanser",       note: "Works for both zones" },
+      { id: "am2", step: "Prep",     product: "Light Mist or Toner",   note: "Optional" },
+      { id: "am3", step: "Protect",  product: "SPF 50",                note: "FINAL step — nothing after this" },
     ],
-    daily: buildDailyForSkinType("combo"),
+    daily: buildGenericDaily(),
   },
   Sensitive: {
     emoji: "🤍", label: "Sensitive / Redness-prone",
     desc: "Minimal routine, fragrance-free, barrier-first approach",
     am: [
-      { id: "am1", step: "Cleanse",  product: "Avène Extremely Gentle Cleanser Lotion", note: "No-rinse — ultra gentle" },
-      { id: "am2", step: "Calm",     product: "Avène Thermal Spring Water Spray",       note: "Soothe before moisturizer" },
-      { id: "am3", step: "Protect",  product: "Avène Mineral SPF50 Tinted",             note: "FINAL step — mineral, fragrance-free" },
+      { id: "am1", step: "Cleanse",  product: "Ultra-Gentle Cleanser", note: "Fragrance-free, no rinse option" },
+      { id: "am2", step: "Calm",     product: "Soothing Mist/Spray",   note: "Soothe before SPF" },
+      { id: "am3", step: "Protect",  product: "Mineral SPF 50",        note: "FINAL step — mineral, fragrance-free" },
     ],
-    daily: buildDailyForSkinType("sensitive"),
+    daily: buildGenericDaily(),
   },
 };
 
-function buildDailyForSkinType() {
-  return {
-    Mon: { label: "Barrier Night", color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Repair + strengthen barrier", active: { step: "Target", product: "Ceramide Capsules or Repair Serum", note: "Barrier restoration" }, footnotes: ["⚠ No actives tonight — barrier nights only."], weeklyAddon: null },
-    Tue: { label: "Hydration Night", color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Deep hydration reset", active: { step: "Target", product: "Hyaluronic Acid Serum", note: "Full face — apply to damp skin" }, footnotes: ["💧 HA works best on slightly damp skin."], weeklyAddon: null },
-    Wed: { label: "Treatment Night", color: "#8b5cf6", bg: "#faf5ff", emoji: "🟪", goal: "Targeted treatment", active: { step: "Target", product: "Niacinamide 10% + Zinc", note: "T-zone focus" }, footnotes: ["⚠ One active only tonight."], weeklyAddon: null },
-    Thu: { label: "Pigment Night", color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Fade dark spots + even tone", active: { step: "Target", product: "Vitamin C Serum or Brightening Serum", note: "PIH fading — full face" }, footnotes: ["⚠ Use brightening serum only tonight."], weeklyAddon: null },
-    Fri: { label: "Barrier Night", color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Recovery + hydration rebuild", active: { step: "Target", product: "Ceramide Capsules or Repair Serum", note: "Barrier restoration" }, footnotes: ["⚠ No actives tonight — barrier nights only."], weeklyAddon: null },
-    Sat: { label: "Reset Night", color: "#a855f7", bg: "#faf5ff", emoji: "🟪", goal: "Hydration reset + deep pore clean", active: { step: "Target", product: "Hyaluronic Acid 2% + B5", note: "Hydration reset — full face" }, footnotes: ["⚠ HA only tonight.", "🗓 Clay mask add-on every 10–14 days."], weeklyAddon: { label: "Clay Cleanse (every 10–14 days)", product: "Clay Mask of choice", note: "T-zone only" } },
-    Sun: { label: "Pigment Night", color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading", active: { step: "Target", product: "Vitamin C Serum or Brightening Serum", note: "PIH fading — full face" }, footnotes: ["⚠ Brightening serum only tonight."], weeklyAddon: null },
-  };
-}
-
-// ── My personal defaults ──────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// VARUN'S PERSONAL DEFAULTS — Summer 2026 brief
+// These are only used as the fallback when Firebase hasn't loaded yet
+// for Varun's own account. New users will never see these.
+// ─────────────────────────────────────────────────────────────────────
 const MY_AM_DEFAULT = [
   { id: "am1", step: "Cleanse", product: "Neutrogena Hydro Boost Cleanser", note: "" },
   { id: "am2", step: "Prep",    product: "Rose Water Mist",                 note: "Optional light mist" },
-  { id: "am3", step: "Protect", product: "Hyphen All I Need SPF 50 PA++++", note: "FINAL step — nothing after this" },
+  { id: "am3", step: "Protect", product: "Fluid Cooling SPF 50",            note: "FINAL step — nothing after this" },
 ];
+
 const PM_BASE_PREFIX = [
   { id: "pmb1", step: "Cleanse", product: "Neutrogena Hydro Boost Cleanser", note: "" },
   { id: "pmb2", step: "Prep",    product: "Rose Water Mist",                 note: "" },
 ];
 const PM_BASE_SUFFIX = [
-  { id: "pmb4", step: "Seal", product: "TO Natural Moisturizing Factors + Rice Lipids", note: "Cheeks/jaw: regular layer. T-zone: fingertip residue only." },
-];
-const MY_DAILY_DEFAULT = {
-  Mon: { label: "Barrier Night", color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Repair + strengthen barrier", active: { step: "Target", product: "Elizabeth Arden Ceramide Capsules (Gold or Silver)", note: "Barrier restoration" }, footnotes: ["⚠ No actives tonight — barrier nights only.", "🧴 Moisturizer on cheeks/jaw only. T-zone gets fingertip residue only."], weeklyAddon: null },
-  Tue: { label: "Oil Control Night", color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Reduce sebum + control pores", active: { step: "Target", product: "The Ordinary Niacinamide 10% + Zinc 1%", note: "T-zone focus only" }, footnotes: ["⚠ Niacinamide only tonight — do not combine with Double Shot.", "🧴 Moisturizer on cheeks/jaw only."], weeklyAddon: null },
-  Wed: { label: "Oil Control + Pore Reset", color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Decongest + refine pores", active: { step: "Target", product: "The Ordinary Niacinamide 10% + Zinc 1%", note: "T-zone focus" }, footnotes: ["🗓 Weekly add-on: Rice Water Pads MUST go BEFORE Niacinamide.", "📍 Pads are T-zone only.", "🧴 Moisturizer on cheeks/jaw only."], weeklyAddon: { label: "Pore Reset", product: "Hyphen Rice Water Brightening Pads", note: "T-zone only — apply BEFORE Niacinamide" } },
-  Thu: { label: "Pigment Night", color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Fade PIH + even skin tone", active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum", note: "PIH fading — full face" }, footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."], weeklyAddon: null },
-  Fri: { label: "Barrier Night", color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Recovery + hydration rebuild", active: { step: "Target", product: "Elizabeth Arden Ceramide Capsules (Gold or Silver)", note: "Barrier restoration" }, footnotes: ["⚠ No actives tonight — barrier nights only.", "🧴 Moisturizer on cheeks/jaw only."], weeklyAddon: null },
-  Sat: { label: "Reset Night", color: "#a855f7", bg: "#faf5ff", emoji: "🟪", goal: "Hydration reset + deep pore clean", active: { step: "Target", product: "The Ordinary Hyaluronic Acid 2% + B5", note: "Hydration reset — full face" }, footnotes: ["⚠ HA only tonight.", "🗓 Clay Mask add-on (T-zone only) every 10–14 days."], weeklyAddon: { label: "Clay Cleanse (every 10–14 days)", product: "Innisfree Volcanic Clay Mask", note: "T-zone only" } },
-  Sun: { label: "Pigment Night", color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading", active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum", note: "PIH fading — full face" }, footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."], weeklyAddon: null },
-};
-const MY_INVENTORY_DEFAULT = [
-  { id: 1,  name: "Neutrogena Hydro Boost Cleanser",               category: "Cleanser",    status: "In Use",    level: 90,  notes: "Brand new", expiry: "" },
-  { id: 2,  name: "Rose Water Mist",                               category: "Prep",        status: "In Use",    level: 60,  notes: "", expiry: "" },
-  { id: 3,  name: "Hyphen Rice Water Brightening Pads",            category: "Prep",        status: "In Use",    level: 70,  notes: "1 almost full + 2 unopened packs", expiry: "" },
-  { id: 6,  name: "Hyphen Double Shot Radiance Lift Serum",        category: "Serum",       status: "In Use",    level: 55,  notes: "1 almost full + 1 unopened backup", expiry: "" },
-  { id: 7,  name: "The Ordinary Niacinamide 10% + Zinc 1%",        category: "Serum",       status: "In Use",    level: 45,  notes: "", expiry: "" },
-  { id: 9,  name: "Elizabeth Arden Ceramide Capsules (Gold)",      category: "Serum",       status: "In Use",    level: 55,  notes: "More than half left", expiry: "" },
-  { id: 13, name: "TO Natural Moisturizing Factors + Rice Lipids", category: "Moisturizer", status: "In Use",    level: 65,  notes: "Rich texture", expiry: "" },
-  { id: 17, name: "Innisfree Volcanic Clay Mask",                  category: "Mask",        status: "In Use",    level: 30,  notes: "Almost full", expiry: "" },
-  { id: 18, name: "Suroskie Rose Collagen Sheet Mask",             category: "Mask",        status: "Low Stock", level: 5,   notes: "Only 1 sheet left!", expiry: "" },
-  { id: 19, name: "Hyphen All I Need SPF 50 PA++++",               category: "Sunscreen",   status: "In Use",    level: 50,  notes: "1 almost full + 1 unopened", expiry: "" },
-  { id: 20, name: "Hyphen Advanced De-Pigmentation Serum",         category: "To Buy",      status: "Wishlist",  level: 0,   notes: "India window — fills Alpha Arbutin gap", expiry: "" },
+  { id: "pmb4", step: "Seal", product: "The Ordinary Rice Lipid Moisturizer", note: "Cheeks/jaw: regular layer. T-zone: fingertip residue only." },
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// Generic PM base for new users — no personal products
+const GENERIC_PM_BASE_PREFIX = [
+  { id: "pmb1", step: "Cleanse", product: "Your cleanser", note: "" },
+  { id: "pmb2", step: "Prep",    product: "Toner / mist (optional)", note: "" },
+];
+const GENERIC_PM_BASE_SUFFIX = [
+  { id: "pmb4", step: "Moisturise", product: "Your moisturizer", note: "Apply as needed" },
+];
+
+const MY_DAILY_DEFAULT = {
+  Mon: { label: "Barrier Night",           color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Repair + strengthen barrier",       active: { step: "Target", product: "Elizabeth Arden Ceramide Capsules",        note: "Barrier restoration — full face" }, footnotes: ["⚠ No actives tonight — barrier nights only.", "🧴 Moisturizer on cheeks/jaw only. T-zone gets fingertip residue only."],                                              weeklyAddon: null },
+  Tue: { label: "Oil Control Night",        color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Reduce sebum + control pores",      active: { step: "Target", product: "The Ordinary Niacinamide 10% + Zinc 1%",   note: "T-zone focus only" },               footnotes: ["⚠ Niacinamide only tonight — do not combine with Double Shot.", "🧴 Moisturizer on cheeks/jaw only."],                                                          weeklyAddon: null },
+  Wed: { label: "Oil Control + Pore Reset", color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Decongest + refine pores",          active: { step: "Target", product: "The Ordinary Niacinamide 10% + Zinc 1%",   note: "T-zone focus" },                    footnotes: ["🗓 Weekly add-on: Rice Water Pads MUST go BEFORE Niacinamide.", "📍 Pads are T-zone only (nose, forehead, chin).", "🧴 Moisturizer on cheeks/jaw only."],      weeklyAddon: { label: "Pore Reset", product: "Hyphen Rice Water Brightening Pads", note: "T-zone only (nose, forehead, chin) — apply BEFORE Niacinamide" } },
+  Thu: { label: "Pigment Night",            color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Fade PIH + even skin tone",         active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum",    note: "PIH fading — full face" },          footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."],                                                                  weeklyAddon: null },
+  Fri: { label: "Barrier Night",            color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Recovery + hydration rebuild",      active: { step: "Target", product: "Elizabeth Arden Ceramide Capsules",        note: "Barrier restoration — full face" }, footnotes: ["⚠ No actives tonight — barrier nights only.", "🧴 Moisturizer on cheeks/jaw only."],                                                                            weeklyAddon: null },
+  Sat: { label: "Reset Night",              color: "#a855f7", bg: "#faf5ff", emoji: "🟪", goal: "Hydration reset + deep pore clean", active: { step: "Target", product: "The Ordinary Hyaluronic Acid 2% + B5",     note: "Hydration reset — full face" },     footnotes: ["⚠ HA only tonight.", "🗓 Clay Mask add-on (T-zone only) every 10–14 days — not mandatory every week."],                                                         weeklyAddon: { label: "Clay Cleanse (every 10–14 days)", product: "Innisfree Volcanic Clay Mask", note: "T-zone only — not mandatory every week" } },
+  Sun: { label: "Pigment Night",            color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading",    active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum",    note: "PIH fading — full face" },          footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."],                                                                  weeklyAddon: null },
+};
+
+const MY_INVENTORY_DEFAULT = [
+  { id: 1,  name: "Neutrogena Hydro Boost Cleanser",               category: "Cleanser",    status: "In Use",    level: 90, notes: "Brand new",                         expiry: "" },
+  { id: 2,  name: "Rose Water Mist",                               category: "Prep",        status: "In Use",    level: 60, notes: "",                                  expiry: "" },
+  { id: 3,  name: "Hyphen Rice Water Brightening Pads",            category: "Prep",        status: "In Use",    level: 70, notes: "1 almost full + 2 unopened packs",  expiry: "" },
+  { id: 4,  name: "Fluid Cooling SPF 50",                          category: "Sunscreen",   status: "In Use",    level: 80, notes: "AM only",                           expiry: "" },
+  { id: 6,  name: "Hyphen Double Shot Radiance Lift Serum",        category: "Serum",       status: "In Use",    level: 55, notes: "1 almost full + 1 unopened backup", expiry: "" },
+  { id: 7,  name: "The Ordinary Niacinamide 10% + Zinc 1%",        category: "Serum",       status: "In Use",    level: 45, notes: "",                                  expiry: "" },
+  { id: 9,  name: "Elizabeth Arden Ceramide Capsules",             category: "Serum",       status: "In Use",    level: 55, notes: "More than half left",               expiry: "" },
+  { id: 10, name: "The Ordinary Hyaluronic Acid 2% + B5",          category: "Serum",       status: "In Use",    level: 70, notes: "",                                  expiry: "" },
+  { id: 13, name: "The Ordinary Rice Lipid Moisturizer",           category: "Moisturizer", status: "In Use",    level: 65, notes: "Cheeks/jaw only",                   expiry: "" },
+  { id: 17, name: "Innisfree Volcanic Clay Mask",                  category: "Mask",        status: "In Use",    level: 30, notes: "T-zone only, every 10–14 days",     expiry: "" },
+  { id: 18, name: "Suroskie Rose Collagen Sheet Mask",             category: "Mask",        status: "Low Stock", level: 5,  notes: "Only 1 sheet left!",                expiry: "" },
+  { id: 20, name: "Hyphen Advanced De-Pigmentation Serum",         category: "To Buy",      status: "Wishlist",  level: 0,  notes: "India window — fills Alpha Arbutin gap", expiry: "" },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────
 const daysUntilExpiry = (expiry) => {
   if (!expiry) return null;
   return Math.floor((new Date(expiry) - new Date()) / 86400000);
@@ -155,13 +175,26 @@ const daysUntilExpiry = (expiry) => {
 const expiryStatus = (expiry) => {
   const d = daysUntilExpiry(expiry);
   if (d === null) return null;
-  if (d < 0) return "expired";
+  if (d < 0)   return "expired";
   if (d <= 90) return "soon";
   return "ok";
 };
 const productInToday = (invName, todayProds) => {
   const n = invName.toLowerCase();
-  return todayProds.some(tp => n.split(/\s+/).filter(w => w.length > 3).some(w => tp.includes(w)));
+  return todayProds.some(tp =>
+    n.split(/\s+/).filter(w => w.length > 3).some(w => tp.includes(w))
+  );
+};
+
+// Returns true if a routine uses real/personal products (not generic placeholders)
+const isPersonalisedRoutine = (amSteps) => {
+  if (!amSteps || amSteps.length === 0) return false;
+  const genericTerms = ["your cleanser", "gentle cleanser", "cream cleanser", "gel cleanser",
+    "hydrating toner", "light mist", "soothing mist", "mineral spf", "spf 50", "product 1",
+    "product 2", "ultra-gentle", "toner / mist"];
+  return amSteps.some(s =>
+    s.product && !genericTerms.some(g => s.product.toLowerCase().includes(g))
+  );
 };
 
 const STATUS_COLORS = {
@@ -177,7 +210,7 @@ const CAT_COLORS = {
   Moisturizer: "#6ee7b7", Mask: "#fca5a5", Sunscreen: "#fdba74", "To Buy": "#c4b5fd",
 };
 
-// ── Shared primitives ─────────────────────────────────────────────────────
+// ── Shared primitives ─────────────────────────────────────────────────
 function LevelBar({ level, T }) {
   const c = level > 60 ? T.green : level > 25 ? T.gold : T.red;
   return (
@@ -249,7 +282,6 @@ function Toast({ msg, T, onDone }) {
   );
 }
 
-// ── Dark mode toggle (identical to Fragrance Vault) ───────────────────────
 function DarkToggle({ dark, toggle }) {
   return (
     <button onClick={toggle} style={{ width: 44, height: 26, borderRadius: 13, border: "none", background: dark ? "#C2622D" : "#E0D9D0", cursor: "pointer", position: "relative", transition: "background 0.3s", flexShrink: 0, padding: 0 }}>
@@ -260,7 +292,7 @@ function DarkToggle({ dark, toggle }) {
   );
 }
 
-// ── Onboarding ────────────────────────────────────────────────────────────
+// ── Onboarding ────────────────────────────────────────────────────────
 function Onboarding({ user, onComplete, dark, toggleDark }) {
   const T = makeTokens(dark);
   const [chosen, setChosen] = useState(null);
@@ -270,13 +302,20 @@ function Onboarding({ user, onComplete, dark, toggleDark }) {
     if (!chosen) return;
     setSaving(true);
     const template = SKIN_TEMPLATES[chosen];
-    const profile = { displayName: user.displayName, photoURL: user.photoURL, skinType: chosen, createdAt: new Date().toISOString(), streakCount: 0, lastCompletedDate: null };
+    const profile = {
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      skinType: chosen,
+      createdAt: new Date().toISOString(),
+      streakCount: 0,
+      lastCompletedDate: null,
+    };
     await saveProfile(user.uid, profile);
-    await saveUserData(user.uid, "amSteps",   template.am);
-    await saveUserData(user.uid, "daily",     template.daily);
-    // FIX 2: Do NOT save inventory — let each user's inventory start empty/default
-    await saveUserData(user.uid, "skinLog",   []);
-    await saveUserData(user.uid, "checked",   { date: TODAY_DATE, steps: {} });
+    // Only save routine data — NOT inventory (starts empty for new users)
+    await saveUserData(user.uid, "amSteps", template.am);
+    await saveUserData(user.uid, "daily",   template.daily);
+    await saveUserData(user.uid, "skinLog", []);
+    await saveUserData(user.uid, "checked", { date: TODAY_DATE, steps: {} });
     onComplete(profile, template.am, template.daily);
   };
 
@@ -308,7 +347,7 @@ function Onboarding({ user, onComplete, dark, toggleDark }) {
   );
 }
 
-// ── Sign-in screen ────────────────────────────────────────────────────────
+// ── Sign-in screen ────────────────────────────────────────────────────
 function SignIn({ dark, toggleDark }) {
   const T = makeTokens(dark);
   const [loading, setLoading] = useState(false);
@@ -324,7 +363,7 @@ function SignIn({ dark, toggleDark }) {
         <div style={{ width: 72, height: 72, borderRadius: "50%", border: `1px solid ${T.borderDark}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", background: T.bgCard, fontSize: 30, boxShadow: "0 4px 24px rgba(28,25,23,0.08)" }}>🌿</div>
         <div style={{ fontFamily: T.fontMono, fontSize: 10, color: T.inkLight, letterSpacing: "0.18em", marginBottom: 12 }}>SUMMER 2026</div>
         <div style={{ fontFamily: T.fontDisplay, fontSize: 34, fontWeight: 600, color: T.ink, fontStyle: "italic", marginBottom: 8, lineHeight: 1.2 }}>Your personal<br />skin dashboard</div>
-        <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, marginBottom: 40, lineHeight: 1.7, maxWidth: 280, margin: "0 auto 40px" }}>Track your routine, inventory, and skin — privately. Share the app with friends; everyone gets their own space.</div>
+        <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, lineHeight: 1.7, maxWidth: 280, margin: "0 auto 40px" }}>Track your routine, inventory, and skin — privately. Share the app with friends; everyone gets their own space.</div>
         <button onClick={handleSignIn} disabled={loading} style={{ width: "100%", padding: "14px", borderRadius: T.radius, border: `1.5px solid ${T.border}`, cursor: "pointer", background: T.bgCard, color: T.ink, fontFamily: T.fontBody, fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 2px 12px rgba(28,25,23,0.08)" }}>
           <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.3 5.5-4.9 7.2v6h7.9c4.6-4.3 7.3-10.6 7.3-17.3z"/><path fill="#34A853" d="M24 48c6.6 0 12.2-2.2 16.2-6l-7.9-6c-2.2 1.5-5 2.3-8.3 2.3-6.4 0-11.8-4.3-13.7-10.1H2.2v6.2C6.2 42.6 14.5 48 24 48z"/><path fill="#FBBC05" d="M10.3 28.2c-.5-1.5-.8-3-.8-4.6s.3-3.2.8-4.6v-6.2H2.2C.8 16.1 0 19.9 0 23.6s.8 7.5 2.2 10.8l8.1-6.2z"/><path fill="#EA4335" d="M24 9.5c3.6 0 6.8 1.2 9.3 3.6l7-7C36.2 2.2 30.6 0 24 0 14.5 0 6.2 5.4 2.2 13.4l8.1 6.2C12.2 13.8 17.6 9.5 24 9.5z"/></svg>
           {loading ? "Signing in…" : "Continue with Google"}
@@ -335,25 +374,24 @@ function SignIn({ dark, toggleDark }) {
   );
 }
 
-// ── Weekly Report ─────────────────────────────────────────────────────────
 function WeeklyReport({ skinLog, inventory, T }) {
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
   const weekLogs = skinLog.filter(e => new Date(e.date) >= weekAgo);
   if (weekLogs.length === 0) return null;
-  const moodMap = { "😊": 5, "😐": 3, "😞": 1, "🥵": 2, "😴": 2 };
-  const avgMood = weekLogs.reduce((s, e) => s + (moodMap[e.mood] || 3), 0) / weekLogs.length;
+  const moodMap     = { "😊": 5, "😐": 3, "😞": 1, "🥵": 2, "😴": 2 };
   const oilinessMap = { "Very Oily": 5, "Oily": 4, "Normal": 3, "Balanced": 2, "Dry": 1 };
-  const avgOil = weekLogs.reduce((s, e) => s + (oilinessMap[e.oiliness] || 3), 0) / weekLogs.length;
+  const avgMood = weekLogs.reduce((s, e) => s + (moodMap[e.mood] || 3), 0) / weekLogs.length;
+  const avgOil  = weekLogs.reduce((s, e) => s + (oilinessMap[e.oiliness] || 3), 0) / weekLogs.length;
   const moodEmoji = avgMood >= 4 ? "😊" : avgMood >= 2.5 ? "😐" : "😞";
-  const oilText = avgOil >= 4 ? "Oily week" : avgOil <= 2 ? "Dry week" : "Balanced";
-  const lowStock = inventory.filter(i => i.level > 0 && i.level <= 20 && i.status !== "Wishlist");
+  const oilText   = avgOil >= 4 ? "Oily week" : avgOil <= 2 ? "Dry week" : "Balanced";
+  const lowStock  = inventory.filter(i => i.level > 0 && i.level <= 20 && i.status !== "Wishlist");
   return (
-    <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: T.radiusLg, padding: "16px 18px", marginBottom: 18, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
+    <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: T.radiusLg, padding: "16px 18px", marginBottom: 18 }}>
       <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.accent, fontWeight: 700, letterSpacing: "0.14em", marginBottom: 12 }}>THIS WEEK'S REPORT</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {[
-          { label: "ENTRIES",  value: weekLogs.length, sub: "days logged" },
-          { label: "MOOD",     value: moodEmoji, sub: avgMood >= 4 ? "Great week" : avgMood >= 2.5 ? "So-so" : "Rough week" },
+          { label: "ENTRIES",  value: weekLogs.length,       sub: "days logged" },
+          { label: "MOOD",     value: moodEmoji,             sub: avgMood >= 4 ? "Great week" : avgMood >= 2.5 ? "So-so" : "Rough week" },
           { label: "OILINESS", value: oilText.split(" ")[0], sub: "avg trend" },
         ].map(({ label, value, sub }) => (
           <div key={label} style={{ background: T.bgSubtle, borderRadius: T.radiusSm, padding: "10px 12px" }}>
@@ -374,7 +412,6 @@ function WeeklyReport({ skinLog, inventory, T }) {
   );
 }
 
-// ── Streak badge ──────────────────────────────────────────────────────────
 function StreakBadge({ streak, T }) {
   if (!streak || streak < 2) return null;
   return (
@@ -385,55 +422,33 @@ function StreakBadge({ streak, T }) {
   );
 }
 
-// ── AI Advisor ────────────────────────────────────────────────────────────
 function AIAdvisor({ amSteps, daily, inventory, skinLog, profile, T }) {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [input,    setInput]    = useState("");
+  const [loading,  setLoading]  = useState(false);
   const bottomRef = useRef(null);
-
   useEffect(() => { if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const systemPrompt = `You are a knowledgeable, friendly skincare advisor. You have full context about this user's routine, inventory, and skin log.
-
 USER PROFILE: Skin type: ${profile?.skinType || "Not specified"}, Name: ${profile?.displayName || "User"}, Streak: ${profile?.streakCount || 0} days
-
 AM ROUTINE: ${JSON.stringify(amSteps?.map(s => s.product))}
 PM SCHEDULE: ${JSON.stringify(Object.entries(daily || {}).map(([day, d]) => ({ day, active: d.active?.product })))}
 INVENTORY: ${JSON.stringify(inventory?.map(i => ({ name: i.name, status: i.status, level: i.level + "%" })))}
 RECENT LOG: ${JSON.stringify(skinLog?.slice(0, 5).map(e => ({ date: e.date, mood: e.mood, oiliness: e.oiliness })))}
-
 Give concise, personalised advice. Keep responses short and mobile-friendly. Be warm, not clinical.`;
 
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
-
     const userMsg = { role: "user", content: text };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
     setInput("");
     setLoading(true);
-
     try {
-      const historyPayload = updatedMessages.slice(-12);
-
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: systemPrompt,
-          messages: historyPayload,
-        }),
-      });
-
+      const res  = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, messages: updatedMessages.slice(-12) }) });
       const data = await res.json();
-
-      if (!res.ok || data.error) {
-        setMessages(prev => [...prev, { role: "assistant", content: "Error: " + (data.error || "Unknown error") }]);
-      } else {
-        setMessages(prev => [...prev, { role: "assistant", content: data.text }]);
-      }
+      setMessages(prev => [...prev, { role: "assistant", content: !res.ok || data.error ? "Error: " + (data.error || "Unknown error") : data.text }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: "assistant", content: "Network error: " + err.message }]);
     } finally {
@@ -442,7 +457,6 @@ Give concise, personalised advice. Keep responses short and mobile-friendly. Be 
   };
 
   const suggestions = ["What's causing my oily T-zone?", "Can I add Vitamin C to my routine?", "Is my routine good for PIH?", "What should I restock first?"];
-
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100svh - 180px)" }}>
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
@@ -455,9 +469,7 @@ Give concise, personalised advice. Keep responses short and mobile-friendly. Be 
             </div>
             <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 10 }}>QUICK QUESTIONS</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-              {suggestions.map(s => (
-                <button key={s} onClick={() => setInput(s)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 500, color: T.accent, background: T.accentLight, border: `1px solid ${T.accent}44`, borderRadius: 99, padding: "6px 13px", cursor: "pointer" }}>{s}</button>
-              ))}
+              {suggestions.map(s => <button key={s} onClick={() => setInput(s)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 500, color: T.accent, background: T.accentLight, border: `1px solid ${T.accent}44`, borderRadius: 99, padding: "6px 13px", cursor: "pointer" }}>{s}</button>)}
             </div>
           </div>
         )}
@@ -468,7 +480,7 @@ Give concise, personalised advice. Keep responses short and mobile-friendly. Be 
         ))}
         {loading && (
           <div style={{ display: "flex", gap: 5, padding: "10px 14px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "16px 16px 16px 4px", width: "fit-content", marginBottom: 12 }}>
-            {[0, 1, 2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, opacity: 0.5, animation: `bounce 1s ease-in-out ${i * 0.15}s infinite` }} />)}
+            {[0,1,2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, opacity: 0.5, animation: `bounce 1s ease-in-out ${i*0.15}s infinite` }} />)}
           </div>
         )}
         <div ref={bottomRef} />
@@ -483,55 +495,44 @@ Give concise, personalised advice. Keep responses short and mobile-friendly. Be 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ── Main App ───────────────────────────────────────────────────────────────
+// ── Main App ────────────────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
 export default function App() {
-  // ── Dark mode (exact pattern from Fragrance Vault) ──
   const [dark, setDark] = useState(() => {
-    try { return localStorage.getItem("sc_dark") === "1"; }
-    catch { return false; }
+    try { return localStorage.getItem("sc_dark") === "1"; } catch { return false; }
   });
-  const toggleDark = () => {
-    setDark(d => {
-      const next = !d;
-      try { localStorage.setItem("sc_dark", next ? "1" : "0"); } catch {}
-      return next;
-    });
-  };
+  const toggleDark = () => setDark(d => { const n = !d; try { localStorage.setItem("sc_dark", n ? "1" : "0"); } catch {} return n; });
   const T = makeTokens(dark);
 
-  // ── Auth state ──
   const [authUser,     setAuthUser]     = useState(undefined);
   const [profile,      setProfile]      = useState(null);
   const [needsOnboard, setNeedsOnboard] = useState(false);
 
-  // ── App data ──
-  // FIX 2: Use generic Combo template as initial state, not personal products
+  // Initial state uses generic template — Firebase data replaces it on load
+  // MY_INVENTORY_DEFAULT is only shown for Varun (replaced by Firebase when his data loads)
   const [amSteps,   setAmSteps]   = useState(SKIN_TEMPLATES.Combo.am);
-  const [daily,     setDaily]     = useState(SKIN_TEMPLATES.Combo.daily);
+  const [daily,     setDaily]     = useState(buildGenericDaily());
   const [inventory, setInventory] = useState(MY_INVENTORY_DEFAULT);
   const [skinLog,   setSkinLog]   = useState([]);
   const [checked,   setChecked]   = useState({ date: TODAY_DATE, steps: {} });
 
-  // ── UI state ──
-  const [tab,           setTab]           = useState("today");
-  const [filterCat,     setFilterCat]     = useState("All");
-  const [toast,         setToast]         = useState(null);
-  const [editAmStep,    setEditAmStep]    = useState(null);
-  const [editDay,       setEditDay]       = useState(null);
-  const [editItem,      setEditItem]      = useState(null);
-  const [addingItem,    setAddingItem]    = useState(false);
-  const [newItem,       setNewItem]       = useState({ name: "", category: "Serum", status: "In Use", level: 100, notes: "", expiry: "" });
-  const [logForm,       setLogForm]       = useState({ mood: "😊", oiliness: "Normal", notes: "" });
-  const [showLog,       setShowLog]       = useState(false);
-  const [addingAmStep,  setAddingAmStep]  = useState(false);
-  const [newAmStep,     setNewAmStep]     = useState({ step: "", product: "", note: "" });
-  const [addingPmStep,  setAddingPmStep]  = useState(null);
-  const [newPmStep,     setNewPmStep]     = useState({ type: "prefix", step: "", product: "", note: "" });
+  const [tab,          setTab]          = useState("today");
+  const [filterCat,    setFilterCat]    = useState("All");
+  const [toast,        setToast]        = useState(null);
+  const [editAmStep,   setEditAmStep]   = useState(null);
+  const [editDay,      setEditDay]      = useState(null);
+  const [editItem,     setEditItem]     = useState(null);
+  const [addingItem,   setAddingItem]   = useState(false);
+  const [newItem,      setNewItem]      = useState({ name: "", category: "Serum", status: "In Use", level: 100, notes: "", expiry: "" });
+  const [logForm,      setLogForm]      = useState({ mood: "😊", oiliness: "Normal", notes: "" });
+  const [showLog,      setShowLog]      = useState(false);
+  const [addingAmStep, setAddingAmStep] = useState(false);
+  const [newAmStep,    setNewAmStep]    = useState({ step: "", product: "", note: "" });
+  const [addingPmStep, setAddingPmStep] = useState(null);
+  const [newPmStep,    setNewPmStep]    = useState({ type: "prefix", step: "", product: "", note: "" });
 
   const showToast = useCallback((msg) => setToast(msg), []);
 
-  // ── Auth listener ──
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       setAuthUser(user || null);
@@ -548,12 +549,12 @@ export default function App() {
       loadUserData(uid, "amSteps"), loadUserData(uid, "daily"),
       loadUserData(uid, "inventory"), loadUserData(uid, "skinLog"), loadUserData(uid, "checked"),
     ]);
-    if (am)                    setAmSteps(am);
-    if (dy)                    setDaily(dy);
-    // FIX 1: Only overwrite inventory if Firebase actually has items saved
+    // Only replace state if Firebase actually has saved data — never wipe with empty
+    if (am  && am.length > 0)  setAmSteps(am);
+    if (dy  && Object.keys(dy).length > 0) setDaily(dy);
     if (inv && inv.length > 0) setInventory(inv);
-    if (log)                   setSkinLog(log);
-    if (chk)                   setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
+    if (log) setSkinLog(log);
+    if (chk) setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
   };
 
   const saveDebounced = useCallback((field, value) => {
@@ -567,7 +568,6 @@ export default function App() {
   useEffect(() => { if (authUser) saveDebounced("skinLog",   skinLog);   }, [skinLog]);
   useEffect(() => { if (authUser) saveDebounced("checked",   checked);   }, [checked]);
 
-  // ── Streak ──
   const updateStreak = useCallback(async () => {
     if (!authUser || !profile) return;
     const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
@@ -580,16 +580,25 @@ export default function App() {
     await saveProfile(authUser.uid, updated);
   }, [authUser, profile]);
 
-  // ── Today schedule ──
-  const todaySched = daily[TODAY] || MY_DAILY_DEFAULT[TODAY];
+  // Is this a personalised routine (real products, not generic placeholders)?
+  const personalised = useMemo(() => isPersonalisedRoutine(amSteps), [amSteps]);
+
+  // PM base steps — use personal ones for personalised routines, generic for new users
+  const pmPrefix = personalised ? PM_BASE_PREFIX : GENERIC_PM_BASE_PREFIX;
+  const pmSuffix = personalised ? PM_BASE_SUFFIX : GENERIC_PM_BASE_SUFFIX;
+
+  // Today's schedule — day-specific, falls back to MY_DAILY_DEFAULT for Varun
+  const todaySched = daily[TODAY] || (personalised ? MY_DAILY_DEFAULT[TODAY] : buildGenericDaily()[TODAY]);
+
   const todayPMSteps = useMemo(() => {
-    const steps = [...PM_BASE_PREFIX];
+    const steps = [...pmPrefix];
     if (todaySched.weeklyAddon) steps.push({ id: "addon", step: "Weekly Add-on 🗓", product: todaySched.weeklyAddon.product, note: todaySched.weeklyAddon.note, isAddon: true });
+    if (todaySched.extraPrefix) steps.push(...todaySched.extraPrefix);
     steps.push({ id: "target", step: todaySched.active.step, product: todaySched.active.product, note: todaySched.active.note });
-    steps.push(...PM_BASE_SUFFIX);
+    steps.push(...pmSuffix);
     if (todaySched.extraSuffix) steps.push(...todaySched.extraSuffix);
     return steps;
-  }, [todaySched]);
+  }, [todaySched, pmPrefix, pmSuffix]);
 
   const allTodayStepIds = [...amSteps.map(s => s.id), ...todayPMSteps.map(s => s.id)];
   const checkedSteps    = checked.steps || {};
@@ -605,33 +614,24 @@ export default function App() {
 
   const toggleCheck = (id) => setChecked(prev => ({ ...prev, steps: { ...prev.steps, [id]: !prev.steps?.[id] } }));
 
-  const todayProducts = useMemo(() =>
+  const todayProductNames = useMemo(() =>
     [...amSteps.map(s => s.product), ...todayPMSteps.map(s => s.product)].map(p => p.toLowerCase()),
   [amSteps, todayPMSteps]);
 
-  // Alerts
-  const lowStockAlerts = inventory.filter(i => i.status === "Low Stock" || (i.level > 0 && i.level <= 20 && i.status !== "Wishlist"));
+  // Suppress expiry/low-stock alerts for products used in today's routine
+  const lowStockAlerts = inventory.filter(i =>
+    (i.status === "Low Stock" || (i.level > 0 && i.level <= 20 && i.status !== "Wishlist")) &&
+    !productInToday(i.name, todayProductNames)
+  );
   const wishlistAlerts = inventory.filter(i => i.status === "Wishlist");
-  const expiryAlerts   = inventory.filter(i => { const es = expiryStatus(i.expiry); return es && es !== "ok"; });
+  const expiryAlerts   = inventory.filter(i => {
+    const es = expiryStatus(i.expiry);
+    return es && es !== "ok" && !productInToday(i.name, todayProductNames);
+  });
 
-  // ── Reusable card style ──
-  const card = {
-    background: T.bgCard,
-    borderRadius: T.radiusLg,
-    border: `1px solid ${T.border}`,
-    padding: "15px 17px",
-    marginBottom: 10,
-    boxShadow: dark ? "none" : "0 1px 4px rgba(28,25,23,0.05)",
-    transition: "background 0.3s, border-color 0.3s",
-  };
+  const card = { background: T.bgCard, borderRadius: T.radiusLg, border: `1px solid ${T.border}`, padding: "15px 17px", marginBottom: 10, boxShadow: dark ? "none" : "0 1px 4px rgba(28,25,23,0.05)", transition: "background 0.3s, border-color 0.3s" };
+  const btnBase = { fontFamily: T.fontBody, fontWeight: 600, cursor: "pointer", border: "none", borderRadius: T.radiusSm, padding: "12px 16px", fontSize: 14, transition: "all 0.15s" };
 
-  const btnBase = {
-    fontFamily: T.fontBody, fontWeight: 600, cursor: "pointer",
-    border: "none", borderRadius: T.radiusSm, padding: "12px 16px", fontSize: 14,
-    transition: "all 0.15s",
-  };
-
-  // ── Step card ──
   function StepCard({ s, isAm }) {
     const isChecked = checkedSteps[s.id];
     return (
@@ -648,17 +648,16 @@ export default function App() {
     );
   }
 
-  // ── Day routine card ──
   function DayRoutineCard({ day }) {
-    const sc = daily[day] || MY_DAILY_DEFAULT[day];
+    const sc = daily[day] || (personalised ? MY_DAILY_DEFAULT[day] : buildGenericDaily()[day]);
     const isToday = day === TODAY;
     const [expanded, setExpanded] = useState(isToday);
     const allPmSteps = [
-      ...PM_BASE_PREFIX,
+      ...pmPrefix,
       ...(sc.extraPrefix || []),
       ...(sc.weeklyAddon ? [{ id: "addon_" + day, step: "Weekly Add-on 🗓", product: sc.weeklyAddon.product, note: sc.weeklyAddon.note, isAddon: true }] : []),
       { id: "target_" + day, step: sc.active.step, product: sc.active.product, note: sc.active.note },
-      ...PM_BASE_SUFFIX,
+      ...pmSuffix,
       ...(sc.extraSuffix || []),
     ];
     const deletePmStep = (stepId, type) => {
@@ -666,7 +665,7 @@ export default function App() {
       showToast("Step removed");
     };
     return (
-      <div style={{ ...card, padding: 0, overflow: "hidden", background: isToday ? T.bgCard : T.bgCard, border: isToday ? `1.5px solid ${T.accent}55` : `1px solid ${T.border}` }}>
+      <div style={{ ...card, padding: 0, overflow: "hidden", border: isToday ? `1.5px solid ${T.accent}55` : `1px solid ${T.border}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "15px 17px", cursor: "pointer" }} onClick={() => setExpanded(e => !e)}>
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", gap: 7, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
@@ -687,7 +686,7 @@ export default function App() {
           <div style={{ borderTop: `1px solid ${T.border}`, padding: "12px 17px 15px" }}>
             <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 10 }}>FULL STEP ORDER</div>
             {allPmSteps.map((s, idx) => {
-              const isExtra = s.id?.startsWith("pm_extra_");
+              const isExtra   = s.id?.startsWith("pm_extra_");
               const extraType = isExtra ? ((sc.extraPrefix || []).find(x => x.id === s.id) ? "prefix" : "suffix") : null;
               return (
                 <div key={s.id} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "9px 11px", background: s.isAddon ? T.greenLight : isExtra ? T.purpleLight : T.bgSubtle, borderRadius: T.radiusSm, marginBottom: 5, border: isExtra ? `1px solid ${T.purple}33` : "1px solid transparent" }}>
@@ -697,9 +696,7 @@ export default function App() {
                     <div style={{ fontFamily: T.fontDisplay, fontSize: 14, fontWeight: 600, color: T.ink }}>{s.product}</div>
                     {s.note && <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid, marginTop: 1 }}>{s.note}</div>}
                   </div>
-                  {isExtra && (
-                    <button onClick={() => deletePmStep(s.id, extraType)} style={{ background: T.redLight, border: "none", borderRadius: 7, padding: "3px 8px", cursor: "pointer", fontFamily: T.fontBody, fontSize: 11, color: T.red, fontWeight: 700, flexShrink: 0 }}>✕</button>
-                  )}
+                  {isExtra && <button onClick={() => deletePmStep(s.id, extraType)} style={{ background: T.redLight, border: "none", borderRadius: 7, padding: "3px 8px", cursor: "pointer", fontFamily: T.fontBody, fontSize: 11, color: T.red, fontWeight: 700, flexShrink: 0 }}>✕</button>}
                 </div>
               );
             })}
@@ -712,46 +709,54 @@ export default function App() {
     );
   }
 
-  // ── Save helpers ──
   const saveAmStep   = () => { setAmSteps(s => s.map(x => x.id === editAmStep.id ? editAmStep : x)); setEditAmStep(null); showToast("AM step saved ✓"); };
   const deleteAmStep = () => { setAmSteps(s => s.filter(x => x.id !== editAmStep.id)); setEditAmStep(null); showToast("Step removed"); };
   const doAddAmStep  = () => { if (!newAmStep.product.trim()) return; setAmSteps(s => [...s, { ...newAmStep, id: "am_" + Date.now() }]); setNewAmStep({ step: "", product: "", note: "" }); setAddingAmStep(false); showToast("AM step added ✓"); };
-  const saveDay = () => { setDaily(prev => ({ ...prev, [editDay._day]: { ...prev[editDay._day], label: editDay.label, goal: editDay.goal, active: { step: "Target", product: editDay.activeProduct, note: editDay.activeNote }, footnotes: (editDay.footnoteText || "").split("\n").filter(f => f.trim()), weeklyAddon: editDay.addonProduct ? { label: editDay.addonLabel, product: editDay.addonProduct, note: editDay.addonNote } : null } })); setEditDay(null); showToast("Day updated ✓"); };
+  const saveDay      = () => { setDaily(prev => ({ ...prev, [editDay._day]: { ...prev[editDay._day], label: editDay.label, goal: editDay.goal, active: { step: "Target", product: editDay.activeProduct, note: editDay.activeNote }, footnotes: (editDay.footnoteText || "").split("\n").filter(f => f.trim()), weeklyAddon: editDay.addonProduct ? { label: editDay.addonLabel, product: editDay.addonProduct, note: editDay.addonNote } : null } })); setEditDay(null); showToast("Day updated ✓"); };
   const doAddPmStep  = (dayKey) => { if (!newPmStep.product.trim()) return; const newId = "pm_extra_" + Date.now(); setDaily(prev => { const d = prev[dayKey]; const field = newPmStep.type === "prefix" ? "extraPrefix" : "extraSuffix"; return { ...prev, [dayKey]: { ...d, [field]: [...(d[field] || []), { ...newPmStep, id: newId }] } }; }); setNewPmStep({ type: "prefix", step: "", product: "", note: "" }); setAddingPmStep(null); showToast("PM step added ✓"); };
-  const saveItem   = () => { setInventory(inv => inv.map(i => i.id === editItem.id ? editItem : i)); setEditItem(null); showToast("Product saved ✓"); };
-  const deleteItem = () => { setInventory(inv => inv.filter(i => i.id !== editItem.id)); setEditItem(null); showToast("Product removed"); };
-  const doAddItem  = () => { if (!newItem.name.trim()) return; setInventory(inv => [...inv, { ...newItem, id: Date.now() }]); setAddingItem(false); showToast("Product added ✓"); };
-  const saveLog    = () => { setSkinLog(p => [{ ...logForm, date: TODAY_DATE, id: Date.now() }, ...p]); setLogForm({ mood: "😊", oiliness: "Normal", notes: "" }); setShowLog(false); showToast("Skin entry logged ✓"); };
+  const saveItem     = () => { setInventory(inv => inv.map(i => i.id === editItem.id ? editItem : i)); setEditItem(null); showToast("Product saved ✓"); };
+  const deleteItem   = () => { setInventory(inv => inv.filter(i => i.id !== editItem.id)); setEditItem(null); showToast("Product removed"); };
+  const doAddItem    = () => { if (!newItem.name.trim()) return; setInventory(inv => [...inv, { ...newItem, id: Date.now() }]); setAddingItem(false); showToast("Product added ✓"); };
+  const saveLog      = () => { setSkinLog(p => [{ ...logForm, date: TODAY_DATE, id: Date.now() }, ...p]); setLogForm({ mood: "😊", oiliness: "Normal", notes: "" }); setShowLog(false); showToast("Skin entry logged ✓"); };
 
-  const cats = ["All", ...Array.from(new Set(inventory.map(i => i.category)))];
+  const cats        = ["All", ...Array.from(new Set(inventory.map(i => i.category)))];
   const filteredInv = filterCat === "All" ? inventory : inventory.filter(i => i.category === filterCat);
-  const isSunday = new Date().getDay() === 0;
+  const isSunday    = new Date().getDay() === 0;
 
-  // ── Loading / auth gates ──
-  if (authUser === undefined) {
-    return (
-      <div style={{ minHeight: "100svh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.3s" }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${T.border}`, borderTopColor: T.accent, animation: "spin 0.8s linear infinite" }} />
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
-    );
-  }
+  if (authUser === undefined) return (
+    <div style={{ minHeight: "100svh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${T.border}`, borderTopColor: T.accent, animation: "spin 0.8s linear infinite" }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
   if (!authUser) return <SignIn dark={dark} toggleDark={toggleDark} />;
-  if (needsOnboard) return <Onboarding user={authUser} onComplete={(prof, am, dy) => { setProfile(prof); setAmSteps(am); setDaily(dy); setInventory([]); setSkinLog([]); setNeedsOnboard(false); }} dark={dark} toggleDark={toggleDark} />;
+  if (needsOnboard) return (
+    <Onboarding
+      user={authUser}
+      onComplete={(prof, am, dy) => {
+        setProfile(prof);
+        setAmSteps(am);
+        setDaily(dy);
+        // New users start with empty inventory — do NOT overwrite with MY_INVENTORY_DEFAULT
+        setInventory([]);
+        setSkinLog([]);
+        setNeedsOnboard(false);
+      }}
+      dark={dark}
+      toggleDark={toggleDark}
+    />
+  );
 
-  // ═══════════════════════════════════════════════════════════════════
   return (
     <div style={{ fontFamily: T.fontBody, background: T.bg, minHeight: "100svh", color: T.ink, transition: "background 0.3s, color 0.3s" }}>
 
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <div style={{ background: T.bgCard, borderBottom: `1px solid ${T.border}`, paddingTop: `calc(14px + env(safe-area-inset-top))`, paddingLeft: 16, paddingRight: 16, paddingBottom: 12, position: "sticky", top: 0, zIndex: 50, transition: "background 0.3s" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, letterSpacing: "0.14em", marginBottom: 2 }}>SUMMER 2026 · SKIN DASHBOARD</div>
-              <div style={{ fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 600, color: T.ink, fontStyle: "italic", lineHeight: 1 }}>
-                {profile?.displayName?.split(" ")[0]}'s Routine
-              </div>
+              <div style={{ fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 600, color: T.ink, fontStyle: "italic", lineHeight: 1 }}>{profile?.displayName?.split(" ")[0]}'s Routine</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <DarkToggle dark={dark} toggle={toggleDark} />
@@ -759,24 +764,13 @@ export default function App() {
               <button onClick={signOutUser} style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, background: "none", border: "none", cursor: "pointer", letterSpacing: "0.08em" }}>OUT</button>
             </div>
           </div>
-
-          {/* Alerts */}
           {(lowStockAlerts.length > 0 || expiryAlerts.length > 0 || wishlistAlerts.length > 0) && (
             <div style={{ marginTop: 9, display: "flex", gap: 5, flexWrap: "wrap" }}>
-              {lowStockAlerts.slice(0, 2).map(i => (
-                <span key={i.id} style={{ background: T.redLight, border: `1px solid ${T.red}88`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.red, fontWeight: 600 }}>⚠ Low: {i.name.split(" ").slice(0, 3).join(" ")}</span>
-              ))}
-              {expiryAlerts.slice(0, 1).map(i => {
-                const d = daysUntilExpiry(i.expiry);
-                return <span key={i.id} style={{ background: T.goldLight, border: `1px solid ${T.gold}88`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.gold, fontWeight: 600 }}>{d < 0 ? "❌ Expired: " : "⏰ Exp soon: "}{i.name.split(" ").slice(0, 3).join(" ")}</span>;
-              })}
-              {wishlistAlerts.slice(0, 1).map(i => (
-                <span key={i.id} style={{ background: T.accentLight, border: `1px solid ${T.accent}55`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.accent, fontWeight: 600 }}>🛒 {i.name.split(" ").slice(0, 4).join(" ")}</span>
-              ))}
+              {lowStockAlerts.slice(0, 2).map(i => <span key={i.id} style={{ background: T.redLight, border: `1px solid ${T.red}88`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.red, fontWeight: 600 }}>⚠ Low: {i.name.split(" ").slice(0, 3).join(" ")}</span>)}
+              {expiryAlerts.slice(0, 1).map(i => { const d = daysUntilExpiry(i.expiry); return <span key={i.id} style={{ background: T.goldLight, border: `1px solid ${T.gold}88`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.gold, fontWeight: 600 }}>{d < 0 ? "❌ Expired: " : "⏰ Exp soon: "}{i.name.split(" ").slice(0, 3).join(" ")}</span>; })}
+              {wishlistAlerts.slice(0, 1).map(i => <span key={i.id} style={{ background: T.accentLight, border: `1px solid ${T.accent}55`, borderRadius: 7, padding: "2px 8px", fontFamily: T.fontBody, fontSize: 10, color: T.accent, fontWeight: 600 }}>🛒 {i.name.split(" ").slice(0, 4).join(" ")}</span>)}
             </div>
           )}
-
-          {/* Tabs */}
           <div style={{ display: "flex", gap: 2, marginTop: 12, background: T.bgSubtle, borderRadius: 99, padding: 3, overflowX: "auto" }}>
             {[["today", "Today"], ["routine", "Routine"], ["inventory", "Inventory"], ["log", "Log"], ["advisor", "✨ Advisor"]].map(([id, lbl]) => (
               <button key={id} onClick={() => setTab(id)} style={{ padding: "7px 12px", borderRadius: 99, border: "none", cursor: "pointer", fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, background: tab === id ? T.bgCard : "transparent", color: tab === id ? T.ink : T.inkLight, transition: "all 0.18s", whiteSpace: "nowrap", flexShrink: 0, boxShadow: tab === id ? "0 1px 4px rgba(28,25,23,0.08)" : "none" }}>{lbl}</button>
@@ -785,14 +779,12 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── BODY ── */}
+      {/* BODY */}
       <div style={{ maxWidth: 640, margin: "0 auto", padding: `18px 15px calc(32px + env(safe-area-inset-bottom))` }}>
 
-        {/* ════ TODAY ════ */}
+        {/* TODAY */}
         {tab === "today" && <>
           <StreakBadge streak={profile?.streakCount} T={T} />
-
-          {/* Progress */}
           <div style={{ ...card, marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight, fontWeight: 700, letterSpacing: "0.1em" }}>TODAY'S PROGRESS</span>
@@ -802,18 +794,23 @@ export default function App() {
               <div style={{ width: `${allTodayStepIds.length ? (completedCount / allTodayStepIds.length) * 100 : 0}%`, background: allDone ? T.green : T.accent, height: "100%", borderRadius: 99, transition: "width 0.5s ease" }} />
             </div>
           </div>
-
           {isSunday && <WeeklyReport skinLog={skinLog} inventory={inventory} T={T} />}
 
+          {/* AM */}
           <Divider label="☀ AM — PROTECT ONLY" color={T.gold} T={T} />
           {amSteps.map(s => <StepCard key={s.id} s={s} isAm />)}
-          <div style={{ background: T.goldLight, border: `1px solid ${T.gold}55`, borderRadius: T.radiusSm, padding: "9px 13px", marginTop: 2, marginBottom: 4 }}>
-            <span style={{ fontFamily: T.fontMono, fontSize: 9, color: T.gold, fontWeight: 700, letterSpacing: "0.08em" }}>❌ DO NOT USE IN AM: </span>
-            <span style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid }}>Serums · Moisturizers · Heavy layering</span>
-          </div>
 
+          {/* AM warning — only for personalised (Varun-specific rule) */}
+          {personalised && (
+            <div style={{ background: T.goldLight, border: `1px solid ${T.gold}55`, borderRadius: T.radiusSm, padding: "9px 13px", marginTop: 2, marginBottom: 4 }}>
+              <span style={{ fontFamily: T.fontMono, fontSize: 9, color: T.gold, fontWeight: 700, letterSpacing: "0.08em" }}>❌ DO NOT USE IN AM: </span>
+              <span style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid }}>Serums · Moisturizers · Heavy layering</span>
+            </div>
+          )}
+
+          {/* PM — day-specific */}
           <Divider label={`🌙 PM — ${todaySched.emoji} ${todaySched.label?.toUpperCase()}`} color={todaySched.color} T={T} />
-          <div style={{ background: T.bgCard, border: `1.5px solid ${todaySched.color}44`, borderRadius: T.radiusLg, padding: "12px 16px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: dark ? "none" : "0 1px 4px rgba(28,25,23,0.05)" }}>
+          <div style={{ background: T.bgCard, border: `1.5px solid ${todaySched.color}44`, borderRadius: T.radiusLg, padding: "12px 16px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontFamily: T.fontMono, fontSize: 9, color: todaySched.color, fontWeight: 700, letterSpacing: "0.09em", marginBottom: 4 }}>TONIGHT'S GOAL</div>
               <div style={{ fontFamily: T.fontDisplay, fontSize: 16, fontWeight: 600, color: T.ink }}>{todaySched.goal}</div>
@@ -831,7 +828,7 @@ export default function App() {
           )}
         </>}
 
-        {/* ════ ROUTINE ════ */}
+        {/* ROUTINE */}
         {tab === "routine" && <>
           <Divider label="☀ AM ROUTINE (DAILY)" color={T.gold} T={T} action={{ label: "+ Add AM Step", onClick: () => { setNewAmStep({ step: "", product: "", note: "" }); setAddingAmStep(true); } }} />
           {amSteps.map(s => (
@@ -851,50 +848,49 @@ export default function App() {
           <Divider label="🌙 PM WEEKLY SCHEDULE" color={T.accent} T={T} />
           {DAYS.map(day => <DayRoutineCard key={day} day={day} />)}
 
-          <div style={{ marginTop: 18, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: T.radiusLg, padding: "18px 20px", boxShadow: dark ? "none" : "0 2px 8px rgba(28,25,23,0.06)" }}>
-            <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.accent, fontWeight: 700, letterSpacing: "0.13em", marginBottom: 8 }}>🔥 GOLDEN RULE</div>
-            <div style={{ fontFamily: T.fontDisplay, fontSize: 17, fontWeight: 600, color: T.ink, fontStyle: "italic", marginBottom: 14, lineHeight: 1.4 }}>"AM = breathable skin. PM = one job only."</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-              {[["Full-face moisturizer", "❌ Never"], ["Cheeks/jaw moisturizer", "✔ Yes"], ["T-zone moisturizer", "✔ Residue only"], ["AM serums/actives", "❌ Never"]].map(([r, v]) => (
-                <div key={r} style={{ background: T.bgSubtle, borderRadius: T.radiusSm, padding: "9px 12px" }}>
-                  <div style={{ fontFamily: T.fontBody, fontSize: 10, color: T.inkLight, marginBottom: 3 }}>{r}</div>
-                  <div style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 700, color: v.startsWith("✔") ? T.green : T.red }}>{v}</div>
-                </div>
-              ))}
+          {/* Golden rule — only for personalised routines */}
+          {personalised && (
+            <div style={{ marginTop: 18, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: T.radiusLg, padding: "18px 20px" }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 9, color: T.accent, fontWeight: 700, letterSpacing: "0.13em", marginBottom: 8 }}>🔥 GOLDEN RULE</div>
+              <div style={{ fontFamily: T.fontDisplay, fontSize: 17, fontWeight: 600, color: T.ink, fontStyle: "italic", marginBottom: 14, lineHeight: 1.4 }}>"AM = breathable skin. PM = one job only."</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                {[["Full-face moisturizer", "❌ Never"], ["Cheeks/jaw moisturizer", "✔ Yes"], ["T-zone moisturizer", "✔ Residue only"], ["AM serums/actives", "❌ Never"]].map(([r, v]) => (
+                  <div key={r} style={{ background: T.bgSubtle, borderRadius: T.radiusSm, padding: "9px 12px" }}>
+                    <div style={{ fontFamily: T.fontBody, fontSize: 10, color: T.inkLight, marginBottom: 3 }}>{r}</div>
+                    <div style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 700, color: v.startsWith("✔") ? T.green : T.red }}>{v}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </>}
 
-        {/* ════ INVENTORY ════ */}
+        {/* INVENTORY */}
         {tab === "inventory" && <>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
-            {cats.map(c => (
-              <button key={c} onClick={() => setFilterCat(c)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, padding: "6px 13px", borderRadius: 99, background: filterCat === c ? T.accent : T.bgCard, color: filterCat === c ? "#fff" : T.inkMid, border: `1px solid ${filterCat === c ? T.accent : T.border}`, cursor: "pointer", transition: "all 0.15s" }}>{c}</button>
-            ))}
+            {cats.map(c => <button key={c} onClick={() => setFilterCat(c)} style={{ fontFamily: T.fontBody, fontSize: 12, fontWeight: 600, padding: "6px 13px", borderRadius: 99, background: filterCat === c ? T.accent : T.bgCard, color: filterCat === c ? "#fff" : T.inkMid, border: `1px solid ${filterCat === c ? T.accent : T.border}`, cursor: "pointer", transition: "all 0.15s" }}>{c}</button>)}
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
             <button onClick={() => { setNewItem({ name: "", category: "Serum", status: "In Use", level: 100, notes: "", expiry: "" }); setAddingItem(true); }} style={{ ...btnBase, background: T.accent, color: "#fff", fontSize: 13, padding: "9px 18px" }}>+ Add Product</button>
           </div>
-
-          {filteredInv.length === 0 && (
-            <div style={{ textAlign: "center", padding: "40px 20px", color: T.inkLight, fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic" }}>No products yet.</div>
-          )}
-
+          {filteredInv.length === 0 && <div style={{ textAlign: "center", padding: "40px 20px", color: T.inkLight, fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic" }}>No products yet.</div>}
           {filteredInv.map(item => {
-            const sc = STATUS_COLORS[item.status] || STATUS_COLORS["Empty"];
-            const es = expiryStatus(item.expiry);
-            const showExpWarn = es && es !== "ok";
-            const dLeft = daysUntilExpiry(item.expiry);
-            const daysLeft = item.level > 0 && item.status === "In Use" ? Math.round(item.level / 2) : null;
+            const sc           = STATUS_COLORS[item.status] || STATUS_COLORS["Empty"];
+            const es           = expiryStatus(item.expiry);
+            const isInToday    = productInToday(item.name, todayProductNames);
+            const showExpWarn  = es && es !== "ok" && !isInToday;
+            const dLeft        = daysUntilExpiry(item.expiry);
+            const estDaysLeft  = item.level > 0 && item.status === "In Use" ? Math.round(item.level / 2) : null;
             return (
-              <div key={item.id} style={{ ...card, border: showExpWarn ? `1.5px solid ${dLeft < 0 ? T.red : T.gold}` : `1px solid ${T.border}`, background: T.bgCard }}>
+              <div key={item.id} style={{ ...card, border: showExpWarn ? `1.5px solid ${dLeft !== null && dLeft < 0 ? T.red : T.gold}` : `1px solid ${T.border}` }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: item.level > 0 && item.status !== "Wishlist" ? 10 : 0 }}>
                   <div style={{ flex: 1, paddingRight: 8 }}>
                     <div style={{ display: "flex", gap: 5, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
                       <span style={{ background: (CAT_COLORS[item.category] || "#e5e7eb") + "33", fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 99, letterSpacing: "0.06em", color: T.inkMid }}>{item.category}</span>
                       <span style={{ background: sc.bg, color: sc.text, fontFamily: T.fontBody, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>● {item.status}</span>
-                      {showExpWarn && <span style={{ background: dLeft < 0 ? T.redLight : T.goldLight, color: dLeft < 0 ? T.red : T.gold, fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{dLeft < 0 ? `❌ EXPIRED (${Math.abs(dLeft)}d ago)` : `⏰ ${dLeft}d left`}</span>}
-                      {daysLeft && item.level <= 20 && <span style={{ background: T.redLight, color: T.red, fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>🛒 ~{daysLeft}d left</span>}
+                      {showExpWarn && <span style={{ background: dLeft !== null && dLeft < 0 ? T.redLight : T.goldLight, color: dLeft !== null && dLeft < 0 ? T.red : T.gold, fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{dLeft !== null && dLeft < 0 ? `❌ EXPIRED (${Math.abs(dLeft)}d ago)` : `⏰ ${dLeft}d left`}</span>}
+                      {!isInToday && estDaysLeft !== null && item.level <= 20 && <span style={{ background: T.redLight, color: T.red, fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>🛒 ~{estDaysLeft}d left</span>}
+                      {item.expiry && !showExpWarn && <span style={{ background: T.bgSubtle, color: T.inkLight, fontFamily: T.fontMono, fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 99 }}>exp {item.expiry}</span>}
                     </div>
                     <div style={{ fontFamily: T.fontDisplay, fontSize: 14, fontWeight: 600, color: T.ink }}>{item.name}</div>
                     {item.notes && <div style={{ fontFamily: T.fontBody, fontSize: 11, color: T.inkMid, marginTop: 2 }}>{item.notes}</div>}
@@ -912,15 +908,11 @@ export default function App() {
           })}
         </>}
 
-        {/* ════ SKIN LOG ════ */}
+        {/* LOG */}
         {tab === "log" && <>
-          <button onClick={() => setShowLog(true)} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic", marginBottom: 18 }}>
-            + Log Today's Skin
-          </button>
+          <button onClick={() => setShowLog(true)} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic", marginBottom: 18 }}>+ Log Today's Skin</button>
           {skinLog.length >= 3 && <WeeklyReport skinLog={skinLog} inventory={inventory} T={T} />}
-          {skinLog.length === 0 && (
-            <div style={{ textAlign: "center", padding: "40px 20px", color: T.inkLight, fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic" }}>No entries yet. Log your first day!</div>
-          )}
+          {skinLog.length === 0 && <div style={{ textAlign: "center", padding: "40px 20px", color: T.inkLight, fontFamily: T.fontDisplay, fontSize: 16, fontStyle: "italic" }}>No entries yet. Log your first day!</div>}
           {skinLog.map(e => (
             <div key={e.id} style={card}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -935,13 +927,11 @@ export default function App() {
           ))}
         </>}
 
-        {/* ════ AI ADVISOR ════ */}
-        {tab === "advisor" && (
-          <AIAdvisor amSteps={amSteps} daily={daily} inventory={inventory} skinLog={skinLog} profile={profile} T={T} />
-        )}
+        {/* ADVISOR */}
+        {tab === "advisor" && <AIAdvisor amSteps={amSteps} daily={daily} inventory={inventory} skinLog={skinLog} profile={profile} T={T} />}
       </div>
 
-      {/* ════ MODALS ════ */}
+      {/* MODALS */}
       {editAmStep && (
         <Modal title="Edit AM Step" onClose={() => setEditAmStep(null)} T={T}>
           <Field label="Step Label" value={editAmStep.step}    onChange={v => setEditAmStep(s => ({ ...s, step: v }))}    T={T} />
@@ -953,33 +943,27 @@ export default function App() {
           </div>
         </Modal>
       )}
-
       {addingAmStep && (
         <Modal title="Add AM Step" onClose={() => setAddingAmStep(false)} T={T}>
-          <div style={{ background: T.goldLight, border: `1px solid ${T.gold}55`, borderRadius: T.radiusSm, padding: "10px 13px", marginBottom: 16, fontFamily: T.fontBody, fontSize: 12, color: T.inkMid, lineHeight: 1.6 }}>
-            ☀ AM steps = gentle + protective only. Cleansers, toners, mists, SPF. No actives.
-          </div>
           <Field label="Step Label" value={newAmStep.step}    onChange={v => setNewAmStep(s => ({ ...s, step: v }))}    placeholder="e.g. Tone" T={T} />
           <Field label="Product"    value={newAmStep.product} onChange={v => setNewAmStep(s => ({ ...s, product: v }))} placeholder="e.g. Klairs Supple Prep Toner" T={T} />
           <Field label="Note"       value={newAmStep.note}    onChange={v => setNewAmStep(s => ({ ...s, note: v }))}    placeholder="e.g. Pat gently" T={T} />
           <button onClick={doAddAmStep} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Add to AM Routine</button>
         </Modal>
       )}
-
       {editDay && (
         <Modal title={`Edit ${editDay._day} — ${editDay.label}`} onClose={() => setEditDay(null)} T={T}>
-          <Field label="Night Label"    value={editDay.label}         onChange={v => setEditDay(d => ({ ...d, label: v }))}         T={T} />
-          <Field label="Goal"           value={editDay.goal}          onChange={v => setEditDay(d => ({ ...d, goal: v }))}          T={T} />
-          <Field label="Active Product" value={editDay.activeProduct} onChange={v => setEditDay(d => ({ ...d, activeProduct: v }))} T={T} />
-          <Field label="Active Note"    value={editDay.activeNote}    onChange={v => setEditDay(d => ({ ...d, activeNote: v }))}    T={T} />
+          <Field label="Night Label"           value={editDay.label}         onChange={v => setEditDay(d => ({ ...d, label: v }))}         T={T} />
+          <Field label="Goal"                  value={editDay.goal}          onChange={v => setEditDay(d => ({ ...d, goal: v }))}          T={T} />
+          <Field label="Active Product"        value={editDay.activeProduct} onChange={v => setEditDay(d => ({ ...d, activeProduct: v }))} T={T} />
+          <Field label="Active Note"           value={editDay.activeNote}    onChange={v => setEditDay(d => ({ ...d, activeNote: v }))}    T={T} />
           <Field label="Footnotes (one per line)" type="textarea" value={editDay.footnoteText} onChange={v => setEditDay(d => ({ ...d, footnoteText: v }))} T={T} />
-          <Field label="Weekly Add-on Product" value={editDay.addonProduct} onChange={v => setEditDay(d => ({ ...d, addonProduct: v }))} placeholder="Optional" T={T} />
-          <Field label="Weekly Add-on Label"   value={editDay.addonLabel}   onChange={v => setEditDay(d => ({ ...d, addonLabel: v }))}   placeholder="Optional" T={T} />
-          <Field label="Weekly Add-on Note"    value={editDay.addonNote}    onChange={v => setEditDay(d => ({ ...d, addonNote: v }))}    placeholder="Optional" T={T} />
+          <Field label="Weekly Add-on Product" value={editDay.addonProduct}  onChange={v => setEditDay(d => ({ ...d, addonProduct: v }))} placeholder="Optional" T={T} />
+          <Field label="Weekly Add-on Label"   value={editDay.addonLabel}    onChange={v => setEditDay(d => ({ ...d, addonLabel: v }))}   placeholder="Optional" T={T} />
+          <Field label="Weekly Add-on Note"    value={editDay.addonNote}     onChange={v => setEditDay(d => ({ ...d, addonNote: v }))}    placeholder="Optional" T={T} />
           <button onClick={saveDay} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Save</button>
         </Modal>
       )}
-
       {addingPmStep && (
         <Modal title={`Add Step — ${addingPmStep} PM`} onClose={() => setAddingPmStep(null)} T={T}>
           <div style={{ marginBottom: 14 }}>
@@ -996,7 +980,6 @@ export default function App() {
           <button onClick={() => doAddPmStep(addingPmStep)} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Add to {addingPmStep} Routine</button>
         </Modal>
       )}
-
       {editItem && (
         <Modal title="Edit Product" onClose={() => setEditItem(null)} T={T}>
           <Field label="Product Name" value={editItem.name}     onChange={v => setEditItem(i => ({ ...i, name: v }))}                                       T={T} />
@@ -1011,7 +994,6 @@ export default function App() {
           </div>
         </Modal>
       )}
-
       {addingItem && (
         <Modal title="Add Product" onClose={() => setAddingItem(false)} T={T}>
           <Field label="Product Name" value={newItem.name}     onChange={v => setNewItem(i => ({ ...i, name: v }))}     placeholder="Product name"             T={T} />
@@ -1023,7 +1005,6 @@ export default function App() {
           <button onClick={doAddItem} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff", marginTop: 8 }}>Add Product</button>
         </Modal>
       )}
-
       {showLog && (
         <Modal title="Log Today's Skin" onClose={() => setShowLog(false)} T={T}>
           <Field label="Mood"            value={logForm.mood}     onChange={v => setLogForm(l => ({ ...l, mood: v }))}     options={["😊", "😐", "😞", "🥵", "😴"]}                       T={T} />
@@ -1032,7 +1013,6 @@ export default function App() {
           <button onClick={saveLog} style={{ ...btnBase, width: "100%", background: T.accent, color: "#fff" }}>Save Entry</button>
         </Modal>
       )}
-
       {toast && <Toast msg={toast} T={T} onDone={() => setToast(null)} />}
     </div>
   );
