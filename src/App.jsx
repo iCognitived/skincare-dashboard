@@ -146,10 +146,20 @@ const MY_DAILY_DEFAULT = {
   Mon: { label: "Barrier Night",           color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Repair + strengthen barrier",       active: { step: "Target", product: "Elizabeth Arden Ceramide Capsules",        note: "Barrier restoration — full face" }, footnotes: ["⚠ No actives tonight — barrier nights only.", "🧴 Moisturizer on cheeks/jaw only. T-zone gets fingertip residue only."],                                              weeklyAddon: null },
   Tue: { label: "Oil Control Night",        color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Reduce sebum + control pores",      active: { step: "Target", product: "The Ordinary Niacinamide 10% + Zinc 1%",   note: "T-zone focus only" },               footnotes: ["⚠ Niacinamide only tonight — do not combine with Double Shot.", "🧴 Moisturizer on cheeks/jaw only."],                                                          weeklyAddon: null },
   Wed: { label: "Oil Control + Pore Reset", color: "#22c55e", bg: "#f0fdf4", emoji: "🟩", goal: "Decongest + refine pores",          active: { step: "Target", product: "The Ordinary Niacinamide 10% + Zinc 1%",   note: "T-zone focus" },                    footnotes: ["🗓 Weekly add-on: Rice Water Pads MUST go BEFORE Niacinamide.", "📍 Pads are T-zone only (nose, forehead, chin).", "🧴 Moisturizer on cheeks/jaw only."],      weeklyAddon: { label: "Pore Reset", product: "Hyphen Rice Water Brightening Pads", note: "T-zone only (nose, forehead, chin) — apply BEFORE Niacinamide" } },
-  Thu: { label: "Pigment Night",            color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Fade PIH + even skin tone",         active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum",    note: "PIH fading — full face" },          footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."],                                                                  weeklyAddon: null },
+  Thu: { label: "Pigment Night",            color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Fade PIH + even skin tone",         active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum",    note: "PIH fading — full face" },          footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."],                                                                  weeklyAddon: null,
+    alternateProducts: [
+      { product: "Hyphen Double Shot Radiance Lift Serum",  note: "PIH fading — full face" },
+      { product: "Hyphen Advanced De-Pigmentation Serum",   note: "Deeper pigment targeting — full face" },
+    ],
+  },
   Fri: { label: "Barrier Night",            color: "#3b82f6", bg: "#eff6ff", emoji: "🟦", goal: "Recovery + hydration rebuild",      active: { step: "Target", product: "Elizabeth Arden Ceramide Capsules",        note: "Barrier restoration — full face" }, footnotes: ["⚠ No actives tonight — barrier nights only.", "🧴 Moisturizer on cheeks/jaw only."],                                                                            weeklyAddon: null },
   Sat: { label: "Reset Night",              color: "#a855f7", bg: "#faf5ff", emoji: "🟪", goal: "Hydration reset + deep pore clean", active: { step: "Target", product: "The Ordinary Hyaluronic Acid 2% + B5",     note: "Hydration reset — full face" },     footnotes: ["⚠ HA only tonight.", "🗓 Clay Mask add-on (T-zone only) every 10–14 days — not mandatory every week."],                                                         weeklyAddon: { label: "Clay Cleanse (every 10–14 days)", product: "Innisfree Volcanic Clay Mask", note: "T-zone only — not mandatory every week" } },
-  Sun: { label: "Pigment Night",            color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading",    active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum",    note: "PIH fading — full face" },          footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."],                                                                  weeklyAddon: null },
+  Sun: { label: "Pigment Night",            color: "#eab308", bg: "#fefce8", emoji: "🟨", goal: "Consistent pigmentation fading",    active: { step: "Target", product: "Hyphen Double Shot Radiance Lift Serum",    note: "PIH fading — full face" },          footnotes: ["⚠ Double Shot ONLY tonight — no Niacinamide alongside.", "🧴 Moisturizer on cheeks/jaw only."],                                                                  weeklyAddon: null,
+    alternateProducts: [
+      { product: "Hyphen Double Shot Radiance Lift Serum",  note: "PIH fading — full face" },
+      { product: "Hyphen Advanced De-Pigmentation Serum",   note: "Deeper pigment targeting — full face" },
+    ],
+  },
 };
 
 const MY_INVENTORY_DEFAULT = [
@@ -514,7 +524,9 @@ export default function App() {
   const [daily,     setDaily]     = useState(buildGenericDaily());
   const [inventory, setInventory] = useState(MY_INVENTORY_DEFAULT);
   const [skinLog,   setSkinLog]   = useState([]);
-  const [checked,   setChecked]   = useState({ date: TODAY_DATE, steps: {} });
+  const [checked,     setChecked]     = useState({ date: TODAY_DATE, steps: {} });
+  // alternates: { Thu: 0, Sat: 1, ... } — index of which alternate product to show per day
+  const [alternates,  setAlternates]  = useState({});
 
   const [tab,          setTab]          = useState("today");
   const [filterCat,    setFilterCat]    = useState("All");
@@ -545,16 +557,19 @@ export default function App() {
   }, []);
 
   const loadAllData = async (uid) => {
-    const [am, dy, inv, log, chk] = await Promise.all([
+    const [am, dy, inv, log, chk, alt] = await Promise.all([
       loadUserData(uid, "amSteps"), loadUserData(uid, "daily"),
-      loadUserData(uid, "inventory"), loadUserData(uid, "skinLog"), loadUserData(uid, "checked"),
+      loadUserData(uid, "inventory"), loadUserData(uid, "skinLog"),
+      loadUserData(uid, "checked"), loadUserData(uid, "alternates"),
     ]);
-    // Only replace state if Firebase actually has saved data — never wipe with empty
-    if (am  && am.length > 0)  setAmSteps(am);
-    if (dy  && Object.keys(dy).length > 0) setDaily(dy);
-    if (inv && inv.length > 0) setInventory(inv);
-    if (log) setSkinLog(log);
-    if (chk) setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
+    // null = no Firebase doc exists yet (keep defaults)
+    // [] or {} = user explicitly has empty/saved state, use it
+    if (am  !== null) setAmSteps(am);
+    if (dy  !== null) setDaily(dy);
+    if (inv !== null) setInventory(inv);
+    if (log !== null) setSkinLog(log);
+    if (chk !== null) setChecked(chk.date === TODAY_DATE ? chk : { date: TODAY_DATE, steps: {} });
+    if (alt !== null) setAlternates(alt);
   };
 
   const saveDebounced = useCallback((field, value) => {
@@ -566,7 +581,16 @@ export default function App() {
   useEffect(() => { if (authUser) saveDebounced("daily",     daily);     }, [daily]);
   useEffect(() => { if (authUser) saveDebounced("inventory", inventory); }, [inventory]);
   useEffect(() => { if (authUser) saveDebounced("skinLog",   skinLog);   }, [skinLog]);
-  useEffect(() => { if (authUser) saveDebounced("checked",   checked);   }, [checked]);
+  useEffect(() => { if (authUser) saveDebounced("checked",    checked);    }, [checked]);
+  useEffect(() => { if (authUser) saveDebounced("alternates", alternates); }, [alternates]);
+
+  // Toggle which alternate product to show for a given day
+  const toggleAlternate = useCallback((day, totalOptions) => {
+    setAlternates(prev => ({
+      ...prev,
+      [day]: ((prev[day] || 0) + 1) % totalOptions,
+    }));
+  }, []);
 
   const updateStreak = useCallback(async () => {
     if (!authUser || !profile) return;
@@ -587,8 +611,17 @@ export default function App() {
   const pmPrefix = personalised ? PM_BASE_PREFIX : GENERIC_PM_BASE_PREFIX;
   const pmSuffix = personalised ? PM_BASE_SUFFIX : GENERIC_PM_BASE_SUFFIX;
 
-  // Today's schedule — day-specific, falls back to MY_DAILY_DEFAULT for Varun
-  const todaySched = daily[TODAY] || (personalised ? MY_DAILY_DEFAULT[TODAY] : buildGenericDaily()[TODAY]);
+  // Today's schedule — day-specific, resolves alternate product if set
+  const todaySchedBase = daily[TODAY] || (personalised ? MY_DAILY_DEFAULT[TODAY] : buildGenericDaily()[TODAY]);
+  const todaySched = useMemo(() => {
+    const alts = todaySchedBase.alternateProducts;
+    if (!alts || alts.length < 2) return todaySchedBase;
+    const idx = alternates[TODAY] || 0;
+    return {
+      ...todaySchedBase,
+      active: { step: "Target", ...alts[idx] },
+    };
+  }, [todaySchedBase, alternates]);
 
   const todayPMSteps = useMemo(() => {
     const steps = [...pmPrefix];
@@ -814,6 +847,19 @@ export default function App() {
             <div>
               <div style={{ fontFamily: T.fontMono, fontSize: 9, color: todaySched.color, fontWeight: 700, letterSpacing: "0.09em", marginBottom: 4 }}>TONIGHT'S GOAL</div>
               <div style={{ fontFamily: T.fontDisplay, fontSize: 16, fontWeight: 600, color: T.ink }}>{todaySched.goal}</div>
+              {todaySchedBase.alternateProducts && todaySchedBase.alternateProducts.length > 1 && (
+                <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: T.fontMono, fontSize: 9, color: T.inkLight }}>
+                    OPTION {(alternates[TODAY] || 0) + 1}/{todaySchedBase.alternateProducts.length}
+                  </span>
+                  <button
+                    onClick={() => toggleAlternate(TODAY, todaySchedBase.alternateProducts.length)}
+                    style={{ fontFamily: T.fontBody, fontSize: 11, fontWeight: 600, color: todaySched.color, background: todaySched.color + "18", border: `1px solid ${todaySched.color}44`, borderRadius: 99, padding: "3px 10px", cursor: "pointer" }}
+                  >
+                    ⇄ Switch product
+                  </button>
+                </div>
+              )}
             </div>
             <span style={{ fontSize: 24 }}>{todaySched.emoji}</span>
           </div>
